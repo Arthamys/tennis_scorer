@@ -1,0 +1,11 @@
+{
+    "name": "tennis-scorer",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "tsc tennis-scorer.ts",
+        "watch": "tsc tennis-scorer.ts --watch"
+    },
+    "devDependencies": {
+        "typescript": "^5.0.0"
+    }
+}

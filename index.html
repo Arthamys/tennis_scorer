@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tennis Score Keeper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .tennis-app {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(45deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        .match-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 20px;
+
+        }
+
+
+
+        .score-display {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 2px;
+            padding: 4px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .scoreboard {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 16px;
+            align-items: center;
+            font-family: monospace;
+        }
+
+        .scoreboard-header {
+            display: contents;
+            font-size: 0.75rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .scoreboard-header>div {
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .player-row {
+            display: contents;
+        }
+
+        .player-name-cell {
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 8px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .player-name-cell:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+        }
+
+        .serve-indicator {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .serve-indicator.active {
+            opacity: 1;
+        }
+
+        .score-cell {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            min-width: 0px;
+        }
+
+        .score-cell.current-game {
+            background: linear-gradient(45deg, rgba(74, 222, 128, 0.3), rgba(34, 197, 94, 0.3));
+            border: 1px solid rgba(74, 222, 128, 0.5);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4ade80, #22c55e);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 222, 128, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #64748b, #475569);
+            box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 20px rgba(100, 116, 139, 0.4);
+        }
+
+        .winner-display {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            border-radius: 16px;
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(74, 222, 128, 0.5);
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+
+        .form-select option {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 640px) {
+            .tennis-app {
+                padding: 24px;
+            }
+
+            .match-info {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .sets-games {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .settings-btn {
+                top: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="tennis-app">
+        <button class="settings-btn" onclick="openSettingsModal()">⚙️</button>
+
+        <div class="header">
+            <h1 class="title">Tennis Scorer</h1>
+            <p class="subtitle">Professional match scoring</p>
+        </div>
+
+        <div class="match-info">
+            <div class="score-display">
+                <div class="scoreboard">
+                    <div class="player-row">
+                        <div class="player-name-cell" id="player1NameScore">
+                            <div class="serve-indicator" id="serve1"></div>
+                            <span>Player 1</span>
+                        </div>
+                        <div class="score-cell current-game" id="gameScore1">0</div>
+                        <div class="score-cell" id="games1">0</div>
+                        <div class="score-cell" id="sets1">0</div>
+                    </div>
+
+                    <div class="player-row">
+                        <div class="player-name-cell" id="player2NameScore">
+                            <div class="serve-indicator" id="serve2"></div>
+                            <span>Player 2</span>
+                        </div>
+                        <div class="score-cell current-game" id="gameScore2">0</div>
+                        <div class="score-cell" id="games2">0</div>
+                        <div class="score-cell" id="sets2">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="btn btn-secondary" onclick="removePoint(1)">-</button>
+                <span style="min-width: 80px; text-align: center; font-weight: 600;">Player 1</span>
+                <button class="btn" onclick="scorePoint(1)">+</button>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="btn btn-secondary" onclick="removePoint(2)">-</button>
+                <span style="min-width: 80px; text-align: center; font-weight: 600;">Player 2</span>
+                <button class="btn" onclick="scorePoint(2)">+</button>
+            </div>
+            <button class="btn btn-secondary" onclick="resetMatch()">New Match</button>
+        </div>
+
+        <div id="winner" class="winner-display" style="display: none;"></div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Match Configuration</h2>
+                <button class="close" onclick="closeSettingsModal()">&times;</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="gamesPerSet">Games Per Set:</label>
+                <input type="number" id="gamesPerSet" class="form-input" min="1" max="20" value="6">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="setsToWin">Sets to Win:</label>
+                <input type="number" id="setsToWin" class="form-input" min="1" max="5" value="2">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="theme">Theme:</label>
+                <select id="theme" class="form-select">
+                    <option value="default">Default</option>
+                    <option value="sunset">Sunset</option>
+                    <option value="forest">Forest</option>
+                    <option value="royal">Royal</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+                <button class="btn" onclick="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="tennis-scorer.js"> </script>
+
+    <script>
+        function openSettingsModal() {
+            if (typeof scorer !== 'undefined') {
+                const config = scorer.getConfig();
+                document.getElementById('gamesPerSet').value = config.gamesPerSet;
+                document.getElementById('setsToWin').value = config.setsToWin;
+                document.getElementById('theme').value = config.theme;
+            }
+            document.getElementById('settingsModal').style.display = 'block';
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function saveSettings() {
+            const gamesPerSet = parseInt(document.getElementById('gamesPerSet').value);
+            const setsToWin = parseInt(document.getElementById('setsToWin').value);
+            const theme = document.getElementById('theme').value;
+
+            if (typeof scorer !== 'undefined') {
+                scorer.updateConfig({
+                    gamesPerSet: gamesPerSet,
+                    setsToWin: setsToWin,
+                    theme: theme
+                });
+            }
+
+            closeSettingsModal();
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('settingsModal');
+            if (event.target === modal) {
+                closeSettingsModal();
+            }
+        }
+    </script>
+</body>
+
+</html>
