@@ -8,6 +8,7 @@ interface MatchState {
     player1: PlayerScore;
     player2: PlayerScore;
     server: 1 | 2;
+    scoreHistory: SetScore[];
     matchWinner: 1 | 2 | null;
 }
 
@@ -15,6 +16,12 @@ interface PlayerScore {
     points: number;
     games: number;
     sets: number;
+}
+
+/// Score of a completed set
+interface SetScore {
+    player1: number;
+    player2: number;
 }
 
 class TennisScorer {
@@ -55,6 +62,7 @@ class TennisScorer {
         this.state = {
             player1: { points: 0, games: 0, sets: 0 },
             player2: { points: 0, games: 0, sets: 0 },
+            scoreHistory: [],
             server: 1,
             matchWinner: null
         };
@@ -127,6 +135,11 @@ class TennisScorer {
 
             if (this.checkSetWin(player)) {
                 currentPlayer.sets++;
+                const finalSetScore = {
+                    player1: this.state.player1.games,
+                    player2: this.state.player2.games
+                };
+                this.state.scoreHistory.push(finalSetScore);
                 this.state.player1.games = 0;
                 this.state.player2.games = 0;
 
@@ -166,6 +179,7 @@ class TennisScorer {
         this.state = {
             player1: { points: 0, games: 0, sets: 0 },
             player2: { points: 0, games: 0, sets: 0 },
+            scoreHistory: [],
             server: 1,
             matchWinner: null
         };
