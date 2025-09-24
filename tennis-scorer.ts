@@ -326,7 +326,7 @@ class TennisScorer {
 
         for (let i = 0; i < this.state.scoreHistory.length; i++) {
             const setCell = document.createElement('div');
-            setCell.className = 'set-history-cell';
+            setCell.className = 'score-cell';
             setCell.textContent = this.state.scoreHistory[i].player1.toString();
             player1SetsContainer.appendChild(setCell);
         }
@@ -337,7 +337,7 @@ class TennisScorer {
 
         for (let i = 0; i < this.state.scoreHistory.length; i++) {
             const setCell = document.createElement('div');
-            setCell.className = 'set-history-cell';
+            setCell.className = 'score-cell';
             setCell.textContent = this.state.scoreHistory[i].player2.toString();
             player2SetsContainer.appendChild(setCell);
         }
