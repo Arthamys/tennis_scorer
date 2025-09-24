@@ -32,6 +32,7 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             max-width: 800px;
             width: 100%;
+            position: relative;
         }
 
         .header {
@@ -170,6 +171,12 @@
             border: 1px solid rgba(74, 222, 128, 0.5);
         }
 
+        .score-cell.empty-set {
+            background: rgba(255, 255, 255, 0.03);
+            opacity: 0.5;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
         #set-headers-container,
         #player1-sets-container,
         #player2-sets-container {
@@ -225,6 +232,9 @@
             font-size: 1.2rem;
             font-weight: 600;
             animation: pulse 2s infinite;
+            position: absolute;
+            width: calc(100% - 80px);
+            z-index: 10;
         }
 
         @keyframes pulse {

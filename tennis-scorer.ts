@@ -137,14 +137,14 @@ class TennisScorer {
     }
 
     private shouldEnterTieBreak(): boolean {
-        return this.state.player1.games === this.config.gamesPerSet &&
-            this.state.player2.games === this.config.gamesPerSet;
+        return (this.state.player1.games === this.config.gamesPerSet &&
+            this.state.player2.games === this.config.gamesPerSet) || this.isDecidingSet();
     }
 
     private isDecidingSet(): boolean {
         // This is the deciding set if both players are one set away from winning
-        return this.state.player1.sets === (this.config.setsToWin - 1) &&
-            this.state.player2.sets === (this.config.setsToWin - 1);
+        return this.state.player1.sets === Math.max(this.config.setsToWin - 1, 1) &&
+            this.state.player2.sets === Math.max(this.config.setsToWin - 1, 1);
     }
 
     private switchServer(): void {
@@ -152,11 +152,11 @@ class TennisScorer {
     }
 
     public scorePoint(player: 1 | 2): void {
-        if (this.state.matchWinner) return;
-
         const currentPlayer = player === 1 ? this.state.player1 : this.state.player2;
 
         currentPlayer.points++;
+
+        if (this.state.matchWinner) return;
 
         // Check if we should enter tie-break mode
         if (!this.state.isTieBreak && this.shouldEnterTieBreak()) {
@@ -178,16 +178,18 @@ class TennisScorer {
                 };
                 this.state.scoreHistory.push(finalSetScore);
 
+                if (this.checkMatchWin(player)) {
+                    this.state.matchWinner = player;
+                    this.updateDisplay();
+                    return;
+                }
+
                 // Reset for next set
                 this.state.player1.games = 0;
                 this.state.player2.games = 0;
                 this.state.player1.points = 0;
                 this.state.player2.points = 0;
                 this.state.isTieBreak = false;
-
-                if (this.checkMatchWin(player)) {
-                    this.state.matchWinner = player;
-                }
             }
         } else {
             // Regular game win
@@ -314,7 +316,7 @@ class TennisScorer {
         const setHeadersContainer = document.getElementById('set-headers-container')!;
         setHeadersContainer.innerHTML = '';
 
-        for (let i = 0; i < this.state.scoreHistory.length; i++) {
+        for (let i = 0; i < this.config.setsToWin; i++) {
             const headerDiv = document.createElement('div');
             headerDiv.textContent = `Set ${i + 1}`;
             setHeadersContainer.appendChild(headerDiv);
@@ -324,10 +326,17 @@ class TennisScorer {
         const player1SetsContainer = document.getElementById('player1-sets-container')!;
         player1SetsContainer.innerHTML = '';
 
-        for (let i = 0; i < this.state.scoreHistory.length; i++) {
+        for (let i = 0; i < this.config.setsToWin; i++) {
             const setCell = document.createElement('div');
-            setCell.className = 'score-cell';
-            setCell.textContent = this.state.scoreHistory[i].player1.toString();
+            if (i < this.state.scoreHistory.length) {
+                // Completed set
+                setCell.className = 'score-cell';
+                setCell.textContent = this.state.scoreHistory[i].player1.toString();
+            } else {
+                // Empty set
+                setCell.className = 'score-cell empty-set';
+                setCell.textContent = '-';
+            }
             player1SetsContainer.appendChild(setCell);
         }
 
@@ -335,10 +344,17 @@ class TennisScorer {
         const player2SetsContainer = document.getElementById('player2-sets-container')!;
         player2SetsContainer.innerHTML = '';
 
-        for (let i = 0; i < this.state.scoreHistory.length; i++) {
+        for (let i = 0; i < this.config.setsToWin; i++) {
             const setCell = document.createElement('div');
-            setCell.className = 'score-cell';
-            setCell.textContent = this.state.scoreHistory[i].player2.toString();
+            if (i < this.state.scoreHistory.length) {
+                // Completed set
+                setCell.className = 'score-cell';
+                setCell.textContent = this.state.scoreHistory[i].player2.toString();
+            } else {
+                // Empty set
+                setCell.className = 'score-cell empty-set';
+                setCell.textContent = '-';
+            }
             player2SetsContainer.appendChild(setCell);
         }
     }
