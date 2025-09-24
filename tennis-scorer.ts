@@ -225,17 +225,18 @@ class TennisScorer {
     }
 
     private updateDisplay(): void {
-        // Update game scores
+        // Update game scores (points)
         document.getElementById('gameScore1')!.textContent =
             this.getGameScoreDisplay(this.state.player1.points, this.state.player2.points);
         document.getElementById('gameScore2')!.textContent =
             this.getGameScoreDisplay(this.state.player2.points, this.state.player1.points);
 
-        // Update sets and games
-        document.getElementById('sets1')!.textContent = this.state.player1.sets.toString();
-        document.getElementById('sets2')!.textContent = this.state.player2.sets.toString();
+        // Update current games
         document.getElementById('games1')!.textContent = this.state.player1.games.toString();
         document.getElementById('games2')!.textContent = this.state.player2.games.toString();
+
+        // Update set history headers and cells
+        this.updateSetHistory();
 
         // Update server indicator
         document.getElementById('serve1')!.classList.toggle('active', this.state.server === 1);
@@ -250,6 +251,40 @@ class TennisScorer {
             winnerDiv.style.display = 'block';
         } else {
             winnerDiv.style.display = 'none';
+        }
+    }
+
+    private updateSetHistory(): void {
+        // Update set headers
+        const setHeadersContainer = document.getElementById('set-headers-container')!;
+        setHeadersContainer.innerHTML = '';
+
+        for (let i = 0; i < this.state.scoreHistory.length; i++) {
+            const headerDiv = document.createElement('div');
+            headerDiv.textContent = `Set ${i + 1}`;
+            setHeadersContainer.appendChild(headerDiv);
+        }
+
+        // Update player 1 set history
+        const player1SetsContainer = document.getElementById('player1-sets-container')!;
+        player1SetsContainer.innerHTML = '';
+
+        for (let i = 0; i < this.state.scoreHistory.length; i++) {
+            const setCell = document.createElement('div');
+            setCell.className = 'set-history-cell';
+            setCell.textContent = this.state.scoreHistory[i].player1.toString();
+            player1SetsContainer.appendChild(setCell);
+        }
+
+        // Update player 2 set history
+        const player2SetsContainer = document.getElementById('player2-sets-container')!;
+        player2SetsContainer.innerHTML = '';
+
+        for (let i = 0; i < this.state.scoreHistory.length; i++) {
+            const setCell = document.createElement('div');
+            setCell.className = 'set-history-cell';
+            setCell.textContent = this.state.scoreHistory[i].player2.toString();
+            player2SetsContainer.appendChild(setCell);
         }
     }
 }
