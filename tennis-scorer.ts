@@ -2,6 +2,7 @@ interface MatchConfig {
     gamesPerSet: number;
     setsToWin: number;
     theme: string;
+    tieBreakPoints: number; // 7 for regular tie-break, 10 for super tie-break
 }
 
 interface MatchState {
@@ -10,6 +11,7 @@ interface MatchState {
     server: 1 | 2;
     scoreHistory: SetScore[];
     matchWinner: 1 | 2 | null;
+    isTieBreak: boolean;
 }
 
 interface PlayerScore {
@@ -33,7 +35,8 @@ class TennisScorer {
         this.config = {
             gamesPerSet: 6,
             setsToWin: 2,
-            theme: 'default'
+            theme: 'default',
+            tieBreakPoints: 7
         };
 
         this.themes = {
@@ -64,7 +67,8 @@ class TennisScorer {
             player2: { points: 0, games: 0, sets: 0 },
             scoreHistory: [],
             server: 1,
-            matchWinner: null
+            matchWinner: null,
+            isTieBreak: false
         };
 
         this.updateDisplay();
@@ -80,6 +84,12 @@ class TennisScorer {
     }
 
     private getGameScoreDisplay(score: number, opponentScore: number): string {
+        // In tie-break, show actual points
+        if (this.state.isTieBreak) {
+            return score.toString();
+        }
+
+        // Regular game scoring
         if (score >= 3 && opponentScore >= 3) {
             if (score === opponentScore) return "40";
             return score > opponentScore ? "AD" : "40";
@@ -105,15 +115,34 @@ class TennisScorer {
         const currentPlayer = player === 1 ? this.state.player1 : this.state.player2;
         const opponent = player === 1 ? this.state.player2 : this.state.player1;
 
+        // Regular set win (win by 2, up to 6 games, or 7-5)
         if (currentPlayer.games >= this.config.gamesPerSet && currentPlayer.games >= opponent.games + 2) {
             return true;
         }
+
+        // Tie-break win condition
+        if (this.state.isTieBreak) {
+            const pointsNeeded = this.isDecidingSet() ? 10 : this.config.tieBreakPoints;
+            return currentPlayer.points >= pointsNeeded && currentPlayer.points >= opponent.points + 2;
+        }
+
         return false;
     }
 
     private checkMatchWin(player: 1 | 2): boolean {
         const currentPlayer = player === 1 ? this.state.player1 : this.state.player2;
         return currentPlayer.sets >= this.config.setsToWin;
+    }
+
+    private shouldEnterTieBreak(): boolean {
+        return this.state.player1.games === this.config.gamesPerSet &&
+               this.state.player2.games === this.config.gamesPerSet;
+    }
+
+    private isDecidingSet(): boolean {
+        // This is the deciding set if both players are one set away from winning
+        return this.state.player1.sets === (this.config.setsToWin - 1) &&
+               this.state.player2.sets === (this.config.setsToWin - 1);
     }
 
     private switchServer(): void {
@@ -127,24 +156,58 @@ class TennisScorer {
 
         currentPlayer.points++;
 
-        if (this.checkGameWin(player)) {
-            currentPlayer.games++;
+        // Check if we should enter tie-break mode
+        if (!this.state.isTieBreak && this.shouldEnterTieBreak()) {
+            this.state.isTieBreak = true;
             this.state.player1.points = 0;
             this.state.player2.points = 0;
-            this.switchServer();
+            currentPlayer.points = 1; // The current point scored starts the tie-break
+        }
 
+        // Check for game/set win
+        if (this.state.isTieBreak) {
+            // Tie-break win
             if (this.checkSetWin(player)) {
                 currentPlayer.sets++;
+                // In tie-break, the final score includes the tie-break result
                 const finalSetScore = {
-                    player1: this.state.player1.games,
-                    player2: this.state.player2.games
+                    player1: this.state.player1.games + (player === 1 ? 1 : 0),
+                    player2: this.state.player2.games + (player === 2 ? 1 : 0)
                 };
                 this.state.scoreHistory.push(finalSetScore);
+
+                // Reset for next set
                 this.state.player1.games = 0;
                 this.state.player2.games = 0;
+                this.state.player1.points = 0;
+                this.state.player2.points = 0;
+                this.state.isTieBreak = false;
 
                 if (this.checkMatchWin(player)) {
                     this.state.matchWinner = player;
+                }
+            }
+        } else {
+            // Regular game win
+            if (this.checkGameWin(player)) {
+                currentPlayer.games++;
+                this.state.player1.points = 0;
+                this.state.player2.points = 0;
+                this.switchServer();
+
+                if (this.checkSetWin(player)) {
+                    currentPlayer.sets++;
+                    const finalSetScore = {
+                        player1: this.state.player1.games,
+                        player2: this.state.player2.games
+                    };
+                    this.state.scoreHistory.push(finalSetScore);
+                    this.state.player1.games = 0;
+                    this.state.player2.games = 0;
+
+                    if (this.checkMatchWin(player)) {
+                        this.state.matchWinner = player;
+                    }
                 }
             }
         }
@@ -181,7 +244,8 @@ class TennisScorer {
             player2: { points: 0, games: 0, sets: 0 },
             scoreHistory: [],
             server: 1,
-            matchWinner: null
+            matchWinner: null,
+            isTieBreak: false
         };
         this.updateDisplay();
     }
