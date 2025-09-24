@@ -77,7 +77,7 @@
 
         .scoreboard {
             display: grid;
-            grid-template-columns: 200px 80px 80px 1fr;
+            grid-template-columns: max-content 80px 80px 1fr;
             gap: 16px;
             align-items: center;
             font-family: monospace;
@@ -110,13 +110,35 @@
             align-items: center;
             gap: 8px;
             transition: background-color 0.2s ease;
-            min-width: 0;
-            width: 200px;
+            min-width: max-content;
+            white-space: nowrap;
         }
 
         .player-name-cell:hover {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 6px;
+        }
+
+        .player-name-text {
+            flex: 1;
+        }
+
+        .player-name-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            padding: 4px 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            min-width: 100px;
+        }
+
+        .player-name-input:focus {
+            outline: none;
+            border-color: rgba(74, 222, 128, 0.5);
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
         }
 
         .serve-indicator {
@@ -399,9 +421,10 @@
                         <div id="set-headers-container"></div>
                     </div>
                     <div class="player-row" id="player1Row">
-                        <div class="player-name-cell" id="player1NameScore">
+                        <div class="player-name-cell" id="player1NameScore" onclick="editPlayerName(1)">
                             <div class="serve-indicator" id="serve1"></div>
-                            <span>Player 1</span>
+                            <span id="player1NameSpan" class="player-name-text">Player 1</span>
+                            <input type="text" id="player1NameInput" class="player-name-input" style="display: none;" onblur="savePlayerName(1)" onkeydown="handleNameKeydown(event, 1)">
                         </div>
                         <div class="score-cell current-game" id="gameScore1">0</div>
                         <div class="score-cell" id="games1">0</div>
@@ -409,9 +432,10 @@
                     </div>
 
                     <div class="player-row" id="player2Row">
-                        <div class="player-name-cell" id="player2NameScore">
+                        <div class="player-name-cell" id="player2NameScore" onclick="editPlayerName(2)">
                             <div class="serve-indicator" id="serve2"></div>
-                            <span>Player 2</span>
+                            <span id="player2NameSpan" class="player-name-text">Player 2</span>
+                            <input type="text" id="player2NameInput" class="player-name-input" style="display: none;" onblur="savePlayerName(2)" onkeydown="handleNameKeydown(event, 2)">
                         </div>
                         <div class="score-cell current-game" id="gameScore2">0</div>
                         <div class="score-cell" id="games2">0</div>

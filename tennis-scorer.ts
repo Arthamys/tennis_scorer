@@ -253,19 +253,8 @@ class TennisScorer {
     }
 
     public updatePlayerNames(): void {
-        const player1Input = document.getElementById('player1Name') as HTMLInputElement;
-        const player2Input = document.getElementById('player2Name') as HTMLInputElement;
-
-        const player1Name = player1Input.value.trim() || 'Player 1';
-        const player2Name = player2Input.value.trim() || 'Player 2';
-
-        // Update scoreboard
-        document.getElementById('player1NameScore')!.querySelector('span')!.textContent = player1Name;
-        document.getElementById('player2NameScore')!.querySelector('span')!.textContent = player2Name;
-
-        // Update controls
-        document.getElementById('player1Control')!.textContent = player1Name;
-        document.getElementById('player2Control')!.textContent = player2Name;
+        // This method is now handled by the inline editing functionality
+        // The old modal-based name editing is no longer used
     }
 
     public updateMatchSettings(): void {
@@ -381,4 +370,46 @@ function updateMatchSettings(): void {
 
 function updateTheme(): void {
     scorer.updateTheme();
+}
+
+function editPlayerName(player: 1 | 2): void {
+    const span = document.getElementById(`player${player}NameSpan`) as HTMLSpanElement;
+    const input = document.getElementById(`player${player}NameInput`) as HTMLInputElement;
+
+    input.value = span.textContent || '';
+    span.style.display = 'none';
+    input.style.display = 'inline';
+    input.focus();
+    input.select();
+}
+
+function savePlayerName(player: 1 | 2): void {
+    const span = document.getElementById(`player${player}NameSpan`) as HTMLSpanElement;
+    const input = document.getElementById(`player${player}NameInput`) as HTMLInputElement;
+
+    const newName = input.value.trim() || `Player ${player}`;
+    span.textContent = newName;
+
+    input.style.display = 'none';
+    span.style.display = 'inline';
+
+    // Update the controls as well
+    const controlElement = document.getElementById(`player${player}Control`);
+    if (controlElement) {
+        controlElement.textContent = newName;
+    }
+}
+
+function handleNameKeydown(event: KeyboardEvent, player: 1 | 2): void {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        (event.target as HTMLInputElement).blur();
+    } else if (event.key === 'Escape') {
+        event.preventDefault();
+        const span = document.getElementById(`player${player}NameSpan`) as HTMLSpanElement;
+        const input = document.getElementById(`player${player}NameInput`) as HTMLInputElement;
+
+        input.style.display = 'none';
+        span.style.display = 'inline';
+    }
 }
