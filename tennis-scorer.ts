@@ -81,6 +81,8 @@ class TennisScorer {
 
     public updateConfig(newConfig: Partial<MatchConfig>): void {
         this.config = { ...this.config, ...newConfig };
+        this.applyTheme();
+        this.updateDisplay();
     }
 
     private getGameScoreDisplay(score: number, opponentScore: number): string {
@@ -136,13 +138,13 @@ class TennisScorer {
 
     private shouldEnterTieBreak(): boolean {
         return this.state.player1.games === this.config.gamesPerSet &&
-               this.state.player2.games === this.config.gamesPerSet;
+            this.state.player2.games === this.config.gamesPerSet;
     }
 
     private isDecidingSet(): boolean {
         // This is the deciding set if both players are one set away from winning
         return this.state.player1.sets === (this.config.setsToWin - 1) &&
-               this.state.player2.sets === (this.config.setsToWin - 1);
+            this.state.player2.sets === (this.config.setsToWin - 1);
     }
 
     private switchServer(): void {
