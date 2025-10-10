@@ -64,7 +64,28 @@ The compiled JavaScript will be output to the `dist/` directory.
 
 ## Running the Application
 
-Simply open [index.html](index.html) in a web browser. The application loads the compiled JavaScript from `dist/main.js`.
+Due to browser CORS restrictions with ES6 modules, you need to serve the application via HTTP rather than opening the file directly.
+
+### Quick Start
+
+```bash
+# Build and start the development server
+npm run dev
+```
+
+Then open your browser to: **http://localhost:8000**
+
+### Alternative: Just Serve (Without Rebuilding)
+
+If you've already built the project and just want to serve it:
+
+```bash
+npm run serve
+```
+
+Then open: **http://localhost:8000**
+
+**Note:** Opening `index.html` directly using the `file://` protocol will not work due to CORS restrictions on ES6 module imports. You must use a local HTTP server.
 
 ## Programmatic Usage
 
