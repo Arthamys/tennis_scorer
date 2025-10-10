@@ -22,6 +22,8 @@ import { TennisDisplayRenderer } from './display/index.js';
 export class ScoreKeeper {
     private match: TennisMatch;
     private renderer: TennisDisplayRenderer;
+    /// A list of socre renders
+    //private scoreCards: 
 
     constructor() {
         this.match = new TennisMatch();
@@ -51,8 +53,11 @@ export class ScoreKeeper {
      * Score a point for the specified player
      */
     public scorePoint(player: 1 | 2): void {
+        console.log('Scoring point for player', player);
         this.match.scorePoint(player);
         this.updateDisplay();
+        this.generateScoreCard();
+        console.log("here");
     }
 
     /**
@@ -111,5 +116,11 @@ export class ScoreKeeper {
         const state = this.match.getState();
         const config = this.match.getConfig();
         this.renderer.render(state, config);
+    }
+
+    private generateScoreCard(): void {
+        const state = this.match.getState();
+        const config = this.match.getConfig();
+        this.renderer.generateScoreCard(state, config);
     }
 }

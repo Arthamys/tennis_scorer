@@ -16,6 +16,7 @@
  */
 
 import { MatchState, MatchConfig } from '../scoring/index.js';
+import html2canvas from 'html2canvas';
 
 export class TennisDisplayRenderer {
     private themes: { [key: string]: { bg: string, text: string } };
@@ -54,6 +55,12 @@ export class TennisDisplayRenderer {
         this.updateSetHistory(state, config);
         this.updateServerIndicator(state);
         this.updateWinnerDisplay(state);
+    }
+
+    public generateScoreCard(state: MatchState, config: MatchConfig): void {
+        html2canvas(document.body).then(function (canvas) {
+            document.body.appendChild(canvas);
+        });
     }
 
     /**
