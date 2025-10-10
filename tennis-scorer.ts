@@ -5,6 +5,26 @@ interface MatchConfig {
     tieBreakPoints: number; // 7 for regular tie-break, 10 for super tie-break
 }
 
+/// Statistics tracked for each player during the match.
+interface PlayerStatistics {
+    aces: number; // Serves that are not touched by the opponent
+    doubleFaults: number; // Points lost due to double faults
+    unforcedErrors: number; // Points _lost_ due to player's own mistakes
+    forcedErrors: number; // Points _lost_ due to the opponent pressuring a bad shot
+    winners: number; // Points _won_ by playing an unreturnable shot
+
+    // Points won on service games
+    pointsWonOnFirstServe: number;
+    pointsWonOnSecondServe: number;
+
+    // Points won on return games
+    firstServeReturns: number; // Total first serves returned
+    secondServeReturns: number; // Total second serves returned
+    pointsWonOnFirstServeReturn: number; // Points won when returning a first serve
+    pointsWonOnSecondServeReturn: number; // Points won when returning a second serve
+}
+
+/// The state of the match
 interface MatchState {
     player1: PlayerScore;
     player2: PlayerScore;
@@ -14,19 +34,51 @@ interface MatchState {
     isTieBreak: boolean;
 }
 
+class Match implements MatchState {
+    player1: PlayerScore;
+    player2: PlayerScore;
+    server: 1 | 2;
+    scoreHistory: SetScore[];
+    matchWinner: 1 | 2 | null;
+    isTieBreak: boolean;
+
+    constructor() {
+        this.player1 = new Player();
+        this.player2 = new Player();
+        this.server = 1;
+        this.scoreHistory = [];
+        this.matchWinner = null;
+        this.isTieBreak = false;
+    }
+}
+
+/// The score for a player and their match statistics.
 interface PlayerScore {
     points: number;
     games: number;
     sets: number;
+    //    stats: PlayerStatistics;
 }
 
-/// Score of a completed set
+class Player implements PlayerScore {
+    points: number;
+    games: number;
+    sets: number;
+
+    constructor() {
+        this.points = 0;
+        this.games = 0;
+        this.sets = 0;
+    }
+}
+
+/// Score of a completed set. Used to track the match history.
 interface SetScore {
     player1: number;
     player2: number;
 }
 
-class TennisScorer {
+class ScoreKeeper {
     private state: MatchState;
     private config: MatchConfig;
     private themes: { [key: string]: { bg: string, text: string } };
@@ -63,8 +115,8 @@ class TennisScorer {
         };
 
         this.state = {
-            player1: { points: 0, games: 0, sets: 0 },
-            player2: { points: 0, games: 0, sets: 0 },
+            player1: new Player(),
+            player2: new Player(),
             scoreHistory: [],
             server: 1,
             matchWinner: null,
@@ -243,14 +295,7 @@ class TennisScorer {
     }
 
     public resetMatch(): void {
-        this.state = {
-            player1: { points: 0, games: 0, sets: 0 },
-            player2: { points: 0, games: 0, sets: 0 },
-            scoreHistory: [],
-            server: 1,
-            matchWinner: null,
-            isTieBreak: false
-        };
+        this.state = new Match();
         this.updateDisplay();
     }
 
@@ -361,7 +406,7 @@ class TennisScorer {
 }
 
 // Initialize the scorer
-const scorer = new TennisScorer();
+const scorer = new ScoreKeeper();
 
 // Global functions for button clicks
 function scorePoint(player: 1 | 2): void {
