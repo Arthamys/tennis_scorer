@@ -20,6 +20,7 @@ import { TennisMatch, MatchConfig } from './scoring/index.js';
 import { TennisDisplayRenderer } from './display/index.js';
 import domtoimage from 'dom-to-image';
 import { saveAs } from 'file-saver';
+import JSZip from 'jszip';
 
 export class ScoreKeeper {
     private match: TennisMatch;
@@ -101,22 +102,36 @@ export class ScoreKeeper {
     /**
      * Generate the score card of every point in the game
      */
-    public buildScoreCards(): void {
+    public async buildScoreCards(): Promise<void> {
         const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+        const state = this.match.getState();
         // save the points played in the match.
-        let pointsHistory = this.match.getState().pointsHistory;
+        let pointsHistory = state.pointsHistory;
+        if (pointsHistory.length === 0) {
+            console.log("No points to replay");
+            return; // No points to replay
+        }
+        console.log("Points history: ", pointsHistory);
+        const zip = new JSZip();
+
         // Start a fresh match before replaying the points
         this.resetMatch();
+        const first_card = await this.generateScoreCard();
+        zip.file("000_scorecard_match_opener.png", first_card);
         for (let i = 0; i < pointsHistory.length; i++) {
-            sleep(250).then(() => {
-                this.scorePoint(pointsHistory[i]);
-                this.updateDisplay();
-                let currentSet = this.match.getState().pastSetScores.length + 1;
-                let currentGame = this.match.getState().player1.games + this.match.getState().player2.games + 1;
-                let currentPoint = this.match.getState().player1.points + this.match.getState().player2.points;
-                this.generateScoreCard("scorecard_set_" + currentSet + "_game_" + currentGame + "_point_" + currentPoint);
-            });
+            await sleep(250);
+            this.scorePoint(pointsHistory[i]);
+            this.updateDisplay();
+            let currentSet = state.pastSetScores.length + 1;
+            let currentGame = state.player1.games + this.match.getState().player2.games + 1;
+            let currentPoint = state.player1.points + this.match.getState().player2.points;
+            let frame = (i + 1).toString().padStart(3, '0');
+            const scorecard = this.generateScoreCard();
+            zip.file(frame + "_set_" + currentSet + "_game_" + currentGame + "_point_" + currentPoint + ".png", scorecard)
         }
+        // Generate and download single ZIP file
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        saveAs(zipBlob, 'score_cards.zip');
     }
 
 
@@ -140,11 +155,8 @@ export class ScoreKeeper {
     /**
      * Download a png snapshot of the current score display
      */
-    private generateScoreCard(fileName: String): void {
+    private async generateScoreCard(): Promise<Blob> {
         let scoreDisplay = document.getElementById("score-display");
-        domtoimage.toBlob(scoreDisplay as HTMLElement)
-            .then(function (blob) {
-                saveAs(blob, fileName + ".png");
-            });
+        return domtoimage.toBlob(scoreDisplay as HTMLElement)
     }
 }
