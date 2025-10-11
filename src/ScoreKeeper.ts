@@ -106,7 +106,7 @@ export class ScoreKeeper {
         const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
         const state = this.match.getState();
         // save the points played in the match.
-        let pointsHistory = state.pointsHistory;
+        const pointsHistory = state.pointsHistory;
         if (pointsHistory.length === 0) {
             console.log("No points to replay");
             return; // No points to replay
@@ -119,13 +119,13 @@ export class ScoreKeeper {
         const first_card = await this.generateScoreCard();
         zip.file("000_scorecard_match_opener.png", first_card);
         for (let i = 0; i < pointsHistory.length; i++) {
-            await sleep(250);
+            await sleep(200);
             this.scorePoint(pointsHistory[i]);
             this.updateDisplay();
-            let currentSet = state.pastSetScores.length + 1;
-            let currentGame = state.player1.games + this.match.getState().player2.games + 1;
-            let currentPoint = state.player1.points + this.match.getState().player2.points;
-            let frame = (i + 1).toString().padStart(3, '0');
+            const currentSet = state.pastSetScores.length + 1;
+            const currentGame = state.player1.games + this.match.getState().player2.games + 1;
+            const currentPoint = state.player1.points + this.match.getState().player2.points;
+            const frame = (i + 1).toString().padStart(3, '0');
             const scorecard = this.generateScoreCard();
             zip.file(frame + "_set_" + currentSet + "_game_" + currentGame + "_point_" + currentPoint + ".png", scorecard)
         }
