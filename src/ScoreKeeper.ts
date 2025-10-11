@@ -121,7 +121,6 @@ export class ScoreKeeper {
         for (let i = 0; i < pointsHistory.length; i++) {
             await sleep(200);
             this.scorePoint(pointsHistory[i]);
-            this.updateDisplay();
             const currentSet = state.pastSetScores.length + 1;
             const currentGame = state.player1.games + this.match.getState().player2.games + 1;
             const currentPoint = state.player1.points + this.match.getState().player2.points;
