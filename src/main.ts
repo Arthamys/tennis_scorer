@@ -101,3 +101,31 @@ function handleNameKeydown(event: KeyboardEvent, player: 1 | 2): void {
 (window as any).savePlayerName = savePlayerName;
 (window as any).handleNameKeydown = handleNameKeydown;
 (window as any).buildScoreCards = buildScoreCards;
+
+// Keyboard shortcuts for scoring
+document.addEventListener('keydown', (event: KeyboardEvent) => {
+    // Ignore keystrokes when typing in input fields
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        return;
+    }
+
+    switch (event.key) {
+        case '1':
+            // Add point to player 1
+            scorePoint(1);
+            break;
+        case '2':
+            // Add point to player 2
+            scorePoint(2);
+            break;
+        case '!':
+            // Remove point from player 1 (Shift + 1)
+            removePoint(1);
+            break;
+        case '@':
+            // Remove point from player 2 (Shift + 2)
+            removePoint(2);
+            break;
+    }
+});
