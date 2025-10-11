@@ -108,7 +108,7 @@ export class ScoreKeeper {
         // Start a fresh match before replaying the points
         this.resetMatch();
         for (let i = 0; i < pointsHistory.length; i++) {
-            sleep(100).then(() => {
+            sleep(250).then(() => {
                 this.scorePoint(pointsHistory[i]);
                 this.updateDisplay();
                 let currentSet = this.match.getState().pastSetScores.length + 1;
