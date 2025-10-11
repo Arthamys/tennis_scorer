@@ -69,7 +69,6 @@ export class ScoreKeeper {
      * Reset the match to initial state
      */
     public resetMatch(): void {
-        console.log("Score Keeper is resetting match");
         this.match.reset();
         this.updateDisplay();
     }
@@ -106,13 +105,11 @@ export class ScoreKeeper {
         const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
         // save the points played in the match.
         let pointsHistory = this.match.getState().pointsHistory;
-        console.log("Score evolution: ", pointsHistory);
         // Start a fresh match before replaying the points
         this.resetMatch();
         for (let i = 0; i < pointsHistory.length; i++) {
             sleep(100).then(() => {
                 this.scorePoint(pointsHistory[i]);
-                console.log(this.match.getState())
                 this.updateDisplay();
                 let currentSet = this.match.getState().pastSetScores.length + 1;
                 let currentGame = this.match.getState().player1.games + this.match.getState().player2.games + 1;
@@ -145,7 +142,6 @@ export class ScoreKeeper {
      */
     private generateScoreCard(fileName: String): void {
         let scoreDisplay = document.getElementById("score-display");
-        console.log(scoreDisplay);
         domtoimage.toBlob(scoreDisplay as HTMLElement)
             .then(function (blob) {
                 saveAs(blob, fileName + ".png");
