@@ -96,7 +96,8 @@ export interface MatchState {
     player1: PlayerScore;
     player2: PlayerScore;
     server: 1 | 2;
-    scoreHistory: SetScore[];
+    pastSetScores: SetScore[];
     matchWinner: 1 | 2 | null;
     isTieBreak: boolean;
+    pointsHistory: Array<1 | 2>; // The thread of points scored in the match
 }

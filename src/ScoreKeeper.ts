@@ -18,12 +18,12 @@
 
 import { TennisMatch, MatchConfig } from './scoring/index.js';
 import { TennisDisplayRenderer } from './display/index.js';
+import domtoimage from 'dom-to-image';
+import { saveAs } from 'file-saver';
 
 export class ScoreKeeper {
     private match: TennisMatch;
     private renderer: TennisDisplayRenderer;
-    /// A list of socre renders
-    //private scoreCards: 
 
     constructor() {
         this.match = new TennisMatch();
@@ -53,11 +53,8 @@ export class ScoreKeeper {
      * Score a point for the specified player
      */
     public scorePoint(player: 1 | 2): void {
-        console.log('Scoring point for player', player);
         this.match.scorePoint(player);
         this.updateDisplay();
-        this.generateScoreCard();
-        console.log("here");
     }
 
     /**
@@ -72,6 +69,7 @@ export class ScoreKeeper {
      * Reset the match to initial state
      */
     public resetMatch(): void {
+        console.log("Score Keeper is resetting match");
         this.match.reset();
         this.updateDisplay();
     }
@@ -102,6 +100,30 @@ export class ScoreKeeper {
     }
 
     /**
+     * Generate the score card of every point in the game
+     */
+    public buildScoreCards(): void {
+        const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+        // save the points played in the match.
+        let pointsHistory = this.match.getState().pointsHistory;
+        console.log("Score evolution: ", pointsHistory);
+        // Start a fresh match before replaying the points
+        this.resetMatch();
+        for (let i = 0; i < pointsHistory.length; i++) {
+            sleep(100).then(() => {
+                this.scorePoint(pointsHistory[i]);
+                console.log(this.match.getState())
+                this.updateDisplay();
+                let currentSet = this.match.getState().pastSetScores.length + 1;
+                let currentGame = this.match.getState().player1.games + this.match.getState().player2.games + 1;
+                let currentPoint = this.match.getState().player1.points + this.match.getState().player2.points;
+                this.generateScoreCard("scorecard_set_" + currentSet + "_game_" + currentGame + "_point_" + currentPoint);
+            });
+        }
+    }
+
+
+    /**
      * Apply the current theme
      */
     private applyTheme(): void {
@@ -118,9 +140,15 @@ export class ScoreKeeper {
         this.renderer.render(state, config);
     }
 
-    private generateScoreCard(): void {
-        const state = this.match.getState();
-        const config = this.match.getConfig();
-        this.renderer.generateScoreCard(state, config);
+    /**
+     * Download a png snapshot of the current score display
+     */
+    private generateScoreCard(fileName: String): void {
+        let scoreDisplay = document.getElementById("score-display");
+        console.log(scoreDisplay);
+        domtoimage.toBlob(scoreDisplay as HTMLElement)
+            .then(function (blob) {
+                saveAs(blob, fileName + ".png");
+            });
     }
 }

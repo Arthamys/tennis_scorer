@@ -33,10 +33,11 @@ export class TennisMatch {
         this.state = {
             player1: new Player(),
             player2: new Player(),
-            scoreHistory: [],
+            pastSetScores: [],
             server: 1,
             matchWinner: null,
-            isTieBreak: false
+            isTieBreak: false,
+            pointsHistory: [],
         };
     }
 
@@ -62,9 +63,10 @@ export class TennisMatch {
             player1: { ...this.state.player1 },
             player2: { ...this.state.player2 },
             server: this.state.server,
-            scoreHistory: [...this.state.scoreHistory],
+            pastSetScores: [...this.state.pastSetScores],
             matchWinner: this.state.matchWinner,
-            isTieBreak: this.state.isTieBreak
+            isTieBreak: this.state.isTieBreak,
+            pointsHistory: [...this.state.pointsHistory],
         };
     }
 
@@ -75,6 +77,7 @@ export class TennisMatch {
         const currentPlayer = player === 1 ? this.state.player1 : this.state.player2;
 
         currentPlayer.points++;
+        this.state.pointsHistory.push(player);
 
         if (this.state.matchWinner) return;
 
@@ -96,7 +99,7 @@ export class TennisMatch {
                     player1: this.state.player1.games + (player === 1 ? 1 : 0),
                     player2: this.state.player2.games + (player === 2 ? 1 : 0)
                 };
-                this.state.scoreHistory.push(finalSetScore);
+                this.state.pastSetScores.push(finalSetScore);
 
                 if (this.checkMatchWin(player)) {
                     this.state.matchWinner = player;
@@ -124,7 +127,7 @@ export class TennisMatch {
                         player1: this.state.player1.games,
                         player2: this.state.player2.games
                     };
-                    this.state.scoreHistory.push(finalSetScore);
+                    this.state.pastSetScores.push(finalSetScore);
                     this.state.player1.games = 0;
                     this.state.player2.games = 0;
 
@@ -158,6 +161,7 @@ export class TennisMatch {
             this.state.player1.points = 3;
             this.state.player2.points = 3;
         }
+        this.state.pointsHistory.pop();
     }
 
     /**
@@ -167,10 +171,11 @@ export class TennisMatch {
         this.state = {
             player1: new Player(),
             player2: new Player(),
-            scoreHistory: [],
+            pastSetScores: [],
             server: 1,
             matchWinner: null,
-            isTieBreak: false
+            isTieBreak: false,
+            pointsHistory: [],
         };
     }
 

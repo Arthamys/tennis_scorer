@@ -39,6 +39,10 @@ function updateTheme(): void {
     scorer.updateTheme();
 }
 
+function buildScoreCards(): void {
+    scorer.buildScoreCards();
+}
+
 function editPlayerName(player: 1 | 2): void {
     const span = document.getElementById(`player${player}NameSpan`) as HTMLSpanElement;
     const input = document.getElementById(`player${player}NameInput`) as HTMLInputElement;
@@ -96,3 +100,4 @@ function handleNameKeydown(event: KeyboardEvent, player: 1 | 2): void {
 (window as any).editPlayerName = editPlayerName;
 (window as any).savePlayerName = savePlayerName;
 (window as any).handleNameKeydown = handleNameKeydown;
+(window as any).buildScoreCards = buildScoreCards;

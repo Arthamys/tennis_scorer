@@ -16,8 +16,6 @@
  */
 
 import { MatchState, MatchConfig } from '../scoring/index.js';
-import domtoimage from 'dom-to-image';
-import { saveAs } from 'file-saver';
 
 export class TennisDisplayRenderer {
     private themes: { [key: string]: { bg: string, text: string } };
@@ -56,15 +54,6 @@ export class TennisDisplayRenderer {
         this.updateSetHistory(state, config);
         this.updateServerIndicator(state);
         this.updateWinnerDisplay(state);
-    }
-
-    public generateScoreCard(state: MatchState, config: MatchConfig): void {
-        let scoreDisplay = document.getElementById("score-display");
-        console.log(scoreDisplay);
-        domtoimage.toBlob(scoreDisplay as HTMLElement)
-            .then(function (blob) {
-                saveAs(blob, 'test.png');
-            });
     }
 
     /**
@@ -164,10 +153,10 @@ export class TennisDisplayRenderer {
 
             for (let i = 0; i < config.setsToWin; i++) {
                 const setCell = document.createElement('div');
-                if (i < state.scoreHistory.length) {
+                if (i < state.pastSetScores.length) {
                     // Completed set
                     setCell.className = 'score-cell';
-                    setCell.textContent = state.scoreHistory[i].player1.toString();
+                    setCell.textContent = state.pastSetScores[i].player1.toString();
                 } else {
                     // Empty set
                     setCell.className = 'score-cell empty-set';
@@ -184,10 +173,10 @@ export class TennisDisplayRenderer {
 
             for (let i = 0; i < config.setsToWin; i++) {
                 const setCell = document.createElement('div');
-                if (i < state.scoreHistory.length) {
+                if (i < state.pastSetScores.length) {
                     // Completed set
                     setCell.className = 'score-cell';
-                    setCell.textContent = state.scoreHistory[i].player2.toString();
+                    setCell.textContent = state.pastSetScores[i].player2.toString();
                 } else {
                     // Empty set
                     setCell.className = 'score-cell empty-set';
