@@ -59,6 +59,21 @@ export class ScoreKeeper {
     }
 
     /**
+     * Score a point with detailed statistics (for testing/advanced use)
+     */
+    public scorePointWithStats(player: 1 | 2, metadata: any): void {
+        this.match.scorePointWithStats(player, metadata);
+        this.updateDisplay();
+    }
+
+    /**
+     * Get match statistics (for testing/advanced use)
+     */
+    public getStatistics(): any {
+        return this.match.getStatistics();
+    }
+
+    /**
      * Remove a point from the specified player (undo)
      */
     public removePoint(player: 1 | 2): void {
@@ -120,7 +135,10 @@ export class ScoreKeeper {
         zip.file("000_scorecard_match_opener.png", first_card);
         for (let i = 0; i < pointsHistory.length; i++) {
             await sleep(200);
-            this.scorePoint(pointsHistory[i]);
+            // Handle both old format (number) and new format (PointMetadata)
+            const point = pointsHistory[i];
+            const winner = typeof point === 'number' ? point : point.winner;
+            this.scorePoint(winner);
             const currentSet = state.pastSetScores.length + 1;
             const currentGame = state.player1.games + this.match.getState().player2.games + 1;
             const currentPoint = state.player1.points + this.match.getState().player2.points;

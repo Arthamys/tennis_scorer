@@ -15,7 +15,7 @@
  * Dependencies: Requires scoring package types for MatchState interface.
  */
 
-import { MatchState, MatchConfig } from '../scoring/index.js';
+import { MatchState, MatchConfig, calculateFirstServePercentage, calculateSecondServePercentage } from '../scoring/index.js';
 
 export class TennisDisplayRenderer {
     private themes: { [key: string]: { bg: string, text: string } };
@@ -54,6 +54,7 @@ export class TennisDisplayRenderer {
         this.updateSetHistory(state, config);
         this.updateServerIndicator(state);
         this.updateWinnerDisplay(state);
+        this.updateStatistics(state);
     }
 
     /**
@@ -206,5 +207,65 @@ export class TennisDisplayRenderer {
             0: "0", 1: "15", 2: "30", 3: "40"
         };
         return scoreMap[score] || "0";
+    }
+
+    /**
+     * Update statistics display
+     */
+    private updateStatistics(state: MatchState): void {
+        // Update player names in stats headers
+        const player1NameEl = document.getElementById('player1NameSpan');
+        const player2NameEl = document.getElementById('player2NameSpan');
+        const statsPlayer1HeaderEl = document.getElementById('statsPlayer1Header');
+        const statsPlayer2HeaderEl = document.getElementById('statsPlayer2Header');
+
+        if (statsPlayer1HeaderEl && player1NameEl) {
+            statsPlayer1HeaderEl.textContent = player1NameEl.textContent || 'Player 1';
+        }
+        if (statsPlayer2HeaderEl && player2NameEl) {
+            statsPlayer2HeaderEl.textContent = player2NameEl.textContent || 'Player 2';
+        }
+
+        // Update Player 1 statistics
+        const p1Stats = state.player1Stats;
+        const firstServe1 = calculateFirstServePercentage(p1Stats);
+        const secondServe1 = calculateSecondServePercentage(p1Stats);
+
+        this.updateStatElement('stat-firstServe-1',
+            `${firstServe1}% (${p1Stats.firstServesIn}/${p1Stats.firstServesTotal})`);
+        this.updateStatElement('stat-secondServe-1',
+            `${secondServe1}% (${p1Stats.secondServesIn}/${p1Stats.secondServesTotal})`);
+        this.updateStatElement('stat-aces-1', p1Stats.aces.toString());
+        this.updateStatElement('stat-doubleFaults-1', p1Stats.doubleFaults.toString());
+        this.updateStatElement('stat-winners-1', p1Stats.winners.toString());
+        this.updateStatElement('stat-unforcedErrors-1', p1Stats.unforcedErrors.toString());
+        this.updateStatElement('stat-forcedErrors-1', p1Stats.forcedErrors.toString());
+        this.updateStatElement('stat-netPoints-1', p1Stats.pointsWonAtNet.toString());
+
+        // Update Player 2 statistics
+        const p2Stats = state.player2Stats;
+        const firstServe2 = calculateFirstServePercentage(p2Stats);
+        const secondServe2 = calculateSecondServePercentage(p2Stats);
+
+        this.updateStatElement('stat-firstServe-2',
+            `${firstServe2}% (${p2Stats.firstServesIn}/${p2Stats.firstServesTotal})`);
+        this.updateStatElement('stat-secondServe-2',
+            `${secondServe2}% (${p2Stats.secondServesIn}/${p2Stats.secondServesTotal})`);
+        this.updateStatElement('stat-aces-2', p2Stats.aces.toString());
+        this.updateStatElement('stat-doubleFaults-2', p2Stats.doubleFaults.toString());
+        this.updateStatElement('stat-winners-2', p2Stats.winners.toString());
+        this.updateStatElement('stat-unforcedErrors-2', p2Stats.unforcedErrors.toString());
+        this.updateStatElement('stat-forcedErrors-2', p2Stats.forcedErrors.toString());
+        this.updateStatElement('stat-netPoints-2', p2Stats.pointsWonAtNet.toString());
+    }
+
+    /**
+     * Helper to update a stat element's text content
+     */
+    private updateStatElement(id: string, value: string): void {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+        }
     }
 }

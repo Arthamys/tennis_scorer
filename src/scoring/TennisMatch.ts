@@ -15,7 +15,7 @@
  * NO DOM/HTML dependencies - pure TypeScript logic only.
  */
 
-import { MatchConfig, MatchState, Player } from './types.js';
+import { MatchConfig, MatchState, Player, PointMetadata, PlayerStatistics, createEmptyStatistics } from './types.js';
 
 export class TennisMatch {
     private state: MatchState;
@@ -38,6 +38,8 @@ export class TennisMatch {
             matchWinner: null,
             isTieBreak: false,
             pointsHistory: [],
+            player1Stats: createEmptyStatistics(),
+            player2Stats: createEmptyStatistics(),
         };
     }
 
@@ -67,17 +69,50 @@ export class TennisMatch {
             matchWinner: this.state.matchWinner,
             isTieBreak: this.state.isTieBreak,
             pointsHistory: [...this.state.pointsHistory],
+            player1Stats: { ...this.state.player1Stats },
+            player2Stats: { ...this.state.player2Stats },
         };
     }
 
     /**
-     * Score a point for the specified player
+     * Get statistics for both players
+     */
+    public getStatistics(): { player1: PlayerStatistics; player2: PlayerStatistics } {
+        return {
+            player1: { ...this.state.player1Stats },
+            player2: { ...this.state.player2Stats },
+        };
+    }
+
+    /**
+     * Score a point for the specified player (simple mode)
+     * This is a convenience wrapper around scorePointWithStats for backward compatibility
      */
     public scorePoint(player: 1 | 2): void {
+        // Call the enhanced method with minimal metadata
+        this.scorePointWithStats(player, {});
+    }
+
+    /**
+     * Score a point with detailed statistics tracking
+     */
+    public scorePointWithStats(player: 1 | 2, metadata: Partial<Omit<PointMetadata, 'winner' | 'server'>>): void {
         const currentPlayer = player === 1 ? this.state.player1 : this.state.player2;
 
         currentPlayer.points++;
-        this.state.pointsHistory.push(player);
+
+        // Create full point metadata
+        const fullMetadata: PointMetadata = {
+            winner: player,
+            server: this.state.server,
+            ...metadata
+        };
+
+        // Update statistics based on metadata
+        this.updateStatistics(fullMetadata);
+
+        // Store in history
+        this.state.pointsHistory.push(fullMetadata);
 
         if (this.state.matchWinner) return;
 
@@ -147,6 +182,12 @@ export class TennisMatch {
 
         const currentPlayer = player === 1 ? this.state.player1 : this.state.player2;
 
+        // Reverse statistics if the last point has metadata
+        const lastPoint = this.state.pointsHistory[this.state.pointsHistory.length - 1];
+        if (lastPoint && typeof lastPoint === 'object' && 'winner' in lastPoint) {
+            this.reverseStatistics(lastPoint);
+        }
+
         if (currentPlayer.points > 0) {
             currentPlayer.points--;
         } else if (currentPlayer.games > 0) {
@@ -176,7 +217,155 @@ export class TennisMatch {
             matchWinner: null,
             isTieBreak: false,
             pointsHistory: [],
+            player1Stats: createEmptyStatistics(),
+            player2Stats: createEmptyStatistics(),
         };
+    }
+
+    /**
+     * Update statistics based on point metadata
+     */
+    private updateStatistics(metadata: PointMetadata): void {
+        const winner = metadata.winner;
+        const loser: 1 | 2 = winner === 1 ? 2 : 1;
+        const server = metadata.server;
+
+        const winnerStats = winner === 1 ? this.state.player1Stats : this.state.player2Stats;
+        const loserStats = loser === 1 ? this.state.player1Stats : this.state.player2Stats;
+        const serverStats = server === 1 ? this.state.player1Stats : this.state.player2Stats;
+
+        // Track serve statistics if provided
+        if (metadata.serveNumber !== undefined) {
+            if (metadata.serveNumber === 1) {
+                serverStats.firstServesTotal++;
+                if (metadata.serveResult === 'in' || metadata.serveResult === 'ace') {
+                    serverStats.firstServesIn++;
+                }
+            } else if (metadata.serveNumber === 2) {
+                serverStats.secondServesTotal++;
+                if (metadata.serveResult === 'in' || metadata.serveResult === 'ace') {
+                    serverStats.secondServesIn++;
+                }
+            }
+        }
+
+        // Track serve outcomes
+        if (metadata.serveResult === 'ace') {
+            serverStats.aces++;
+        } else if (metadata.serveResult === 'fault' && metadata.serveNumber === 2) {
+            // Double fault (second serve was a fault)
+            serverStats.doubleFaults++;
+        }
+
+        // Track point type statistics
+        if (metadata.pointType === 'winner') {
+            winnerStats.winners++;
+        } else if (metadata.pointType === 'unforced_error') {
+            loserStats.unforcedErrors++;
+        } else if (metadata.pointType === 'forced_error') {
+            loserStats.forcedErrors++;
+        } else if (metadata.pointType === 'net') {
+            winnerStats.pointsWonAtNet++;
+        }
+
+        // Track points won on serve
+        if (winner === server && metadata.serveNumber !== undefined) {
+            if (metadata.serveNumber === 1) {
+                winnerStats.pointsWonOnFirstServe++;
+            } else if (metadata.serveNumber === 2) {
+                winnerStats.pointsWonOnSecondServe++;
+            }
+        }
+
+        // Track return statistics (when receiver wins the point)
+        if (winner !== server && metadata.serveNumber !== undefined) {
+            if (metadata.serveNumber === 1) {
+                winnerStats.firstServeReturns++;
+                winnerStats.pointsWonOnFirstServeReturn++;
+            } else if (metadata.serveNumber === 2) {
+                winnerStats.secondServeReturns++;
+                winnerStats.pointsWonOnSecondServeReturn++;
+            }
+        } else if (loser !== server && metadata.serveNumber !== undefined) {
+            // Loser attempted a return but didn't win
+            if (metadata.serveNumber === 1) {
+                loserStats.firstServeReturns++;
+            } else if (metadata.serveNumber === 2) {
+                loserStats.secondServeReturns++;
+            }
+        }
+    }
+
+    /**
+     * Reverse statistics updates when undoing a point
+     */
+    private reverseStatistics(metadata: PointMetadata): void {
+        const winner = metadata.winner;
+        const loser: 1 | 2 = winner === 1 ? 2 : 1;
+        const server = metadata.server;
+
+        const winnerStats = winner === 1 ? this.state.player1Stats : this.state.player2Stats;
+        const loserStats = loser === 1 ? this.state.player1Stats : this.state.player2Stats;
+        const serverStats = server === 1 ? this.state.player1Stats : this.state.player2Stats;
+
+        // Reverse serve statistics if provided
+        if (metadata.serveNumber !== undefined) {
+            if (metadata.serveNumber === 1) {
+                serverStats.firstServesTotal = Math.max(0, serverStats.firstServesTotal - 1);
+                if (metadata.serveResult === 'in' || metadata.serveResult === 'ace') {
+                    serverStats.firstServesIn = Math.max(0, serverStats.firstServesIn - 1);
+                }
+            } else if (metadata.serveNumber === 2) {
+                serverStats.secondServesTotal = Math.max(0, serverStats.secondServesTotal - 1);
+                if (metadata.serveResult === 'in' || metadata.serveResult === 'ace') {
+                    serverStats.secondServesIn = Math.max(0, serverStats.secondServesIn - 1);
+                }
+            }
+        }
+
+        // Reverse serve outcomes
+        if (metadata.serveResult === 'ace') {
+            serverStats.aces = Math.max(0, serverStats.aces - 1);
+        } else if (metadata.serveResult === 'fault' && metadata.serveNumber === 2) {
+            serverStats.doubleFaults = Math.max(0, serverStats.doubleFaults - 1);
+        }
+
+        // Reverse point type statistics
+        if (metadata.pointType === 'winner') {
+            winnerStats.winners = Math.max(0, winnerStats.winners - 1);
+        } else if (metadata.pointType === 'unforced_error') {
+            loserStats.unforcedErrors = Math.max(0, loserStats.unforcedErrors - 1);
+        } else if (metadata.pointType === 'forced_error') {
+            loserStats.forcedErrors = Math.max(0, loserStats.forcedErrors - 1);
+        } else if (metadata.pointType === 'net') {
+            winnerStats.pointsWonAtNet = Math.max(0, winnerStats.pointsWonAtNet - 1);
+        }
+
+        // Reverse points won on serve
+        if (winner === server && metadata.serveNumber !== undefined) {
+            if (metadata.serveNumber === 1) {
+                winnerStats.pointsWonOnFirstServe = Math.max(0, winnerStats.pointsWonOnFirstServe - 1);
+            } else if (metadata.serveNumber === 2) {
+                winnerStats.pointsWonOnSecondServe = Math.max(0, winnerStats.pointsWonOnSecondServe - 1);
+            }
+        }
+
+        // Reverse return statistics
+        if (winner !== server && metadata.serveNumber !== undefined) {
+            if (metadata.serveNumber === 1) {
+                winnerStats.firstServeReturns = Math.max(0, winnerStats.firstServeReturns - 1);
+                winnerStats.pointsWonOnFirstServeReturn = Math.max(0, winnerStats.pointsWonOnFirstServeReturn - 1);
+            } else if (metadata.serveNumber === 2) {
+                winnerStats.secondServeReturns = Math.max(0, winnerStats.secondServeReturns - 1);
+                winnerStats.pointsWonOnSecondServeReturn = Math.max(0, winnerStats.pointsWonOnSecondServeReturn - 1);
+            }
+        } else if (loser !== server && metadata.serveNumber !== undefined) {
+            if (metadata.serveNumber === 1) {
+                loserStats.firstServeReturns = Math.max(0, loserStats.firstServeReturns - 1);
+            } else if (metadata.serveNumber === 2) {
+                loserStats.secondServeReturns = Math.max(0, loserStats.secondServeReturns - 1);
+            }
+        }
     }
 
     /**

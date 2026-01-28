@@ -18,13 +18,30 @@ export interface MatchConfig {
     tieBreakPoints: number; // 7 for regular tie-break, 10 for super tie-break
 }
 
+/// Metadata about how a point was won
+export interface PointMetadata {
+    winner: 1 | 2; // Which player won the point
+    server: 1 | 2; // Who was serving
+    serveNumber?: 1 | 2; // First or second serve (undefined if not tracked)
+    serveResult?: 'in' | 'fault' | 'ace'; // Result of the serve (undefined if not tracked)
+    pointType?: 'winner' | 'unforced_error' | 'forced_error' | 'net' | 'regular'; // How the point ended
+}
+
 /// Statistics tracked for each player during the match.
 export interface PlayerStatistics {
+    // Serve statistics
+    firstServesIn: number; // Successful first serves
+    firstServesTotal: number; // Total first serve attempts
+    secondServesIn: number; // Successful second serves
+    secondServesTotal: number; // Total second serve attempts
     aces: number; // Serves that are not touched by the opponent
     doubleFaults: number; // Points lost due to double faults
+
+    // Point outcome statistics
     unforcedErrors: number; // Points _lost_ due to player's own mistakes
     forcedErrors: number; // Points _lost_ due to the opponent pressuring a bad shot
     winners: number; // Points _won_ by playing an unreturnable shot
+    pointsWonAtNet: number; // Points won by playing at the net
 
     // Points won on service games
     pointsWonOnFirstServe: number;
@@ -35,6 +52,39 @@ export interface PlayerStatistics {
     secondServeReturns: number; // Total second serves returned
     pointsWonOnFirstServeReturn: number; // Points won when returning a first serve
     pointsWonOnSecondServeReturn: number; // Points won when returning a second serve
+}
+
+/// Helper functions to calculate percentages from statistics
+export function calculateFirstServePercentage(stats: PlayerStatistics): number {
+    if (stats.firstServesTotal === 0) return 0;
+    return Math.round((stats.firstServesIn / stats.firstServesTotal) * 100);
+}
+
+export function calculateSecondServePercentage(stats: PlayerStatistics): number {
+    if (stats.secondServesTotal === 0) return 0;
+    return Math.round((stats.secondServesIn / stats.secondServesTotal) * 100);
+}
+
+/// Create an empty statistics object
+export function createEmptyStatistics(): PlayerStatistics {
+    return {
+        firstServesIn: 0,
+        firstServesTotal: 0,
+        secondServesIn: 0,
+        secondServesTotal: 0,
+        aces: 0,
+        doubleFaults: 0,
+        unforcedErrors: 0,
+        forcedErrors: 0,
+        winners: 0,
+        pointsWonAtNet: 0,
+        pointsWonOnFirstServe: 0,
+        pointsWonOnSecondServe: 0,
+        firstServeReturns: 0,
+        secondServeReturns: 0,
+        pointsWonOnFirstServeReturn: 0,
+        pointsWonOnSecondServeReturn: 0,
+    };
 }
 
 /// The score for a player
@@ -99,5 +149,7 @@ export interface MatchState {
     pastSetScores: SetScore[];
     matchWinner: 1 | 2 | null;
     isTieBreak: boolean;
-    pointsHistory: Array<1 | 2>; // The thread of points scored in the match
+    pointsHistory: Array<1 | 2 | PointMetadata>; // Can be simple (1|2) for backward compatibility or detailed metadata
+    player1Stats: PlayerStatistics;
+    player2Stats: PlayerStatistics;
 }

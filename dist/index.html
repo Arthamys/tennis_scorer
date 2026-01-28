@@ -363,6 +363,126 @@
             margin-top: 20px;
         }
 
+        /* Statistics Panel Styles */
+        .stats-section {
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .stats-toggle {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .stats-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .stats-toggle:active {
+            transform: translateY(0);
+        }
+
+        .stats-icon {
+            font-size: 1.2rem;
+        }
+
+        .stats-label {
+            flex: 1;
+            text-align: left;
+        }
+
+        .stats-chevron {
+            transition: transform 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .stats-chevron.expanded {
+            transform: rotate(180deg);
+        }
+
+        .stats-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .stats-panel.expanded {
+            max-height: 500px;
+        }
+
+        .stats-table {
+            width: 100%;
+            margin-top: 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            border-collapse: collapse;
+        }
+
+        .stats-table thead {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stats-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .stats-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-name {
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            text-align: center;
+            font-weight: 600;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+        }
+
+        /* Stat Input Modal Button Styles */
+        .stat-btn {
+            flex: 0 0 auto;
+            font-size: 0.9rem;
+            padding: 10px 16px;
+        }
+
+        .stat-btn.selected {
+            background: linear-gradient(45deg, #4ade80, #22c55e);
+            border: 2px solid rgba(74, 222, 128, 0.8);
+            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
+        }
+
         @media (max-width: 640px) {
             .tennis-app {
                 padding: 24px;
@@ -388,7 +508,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/index-CpLwp2OR.js"></script>
+  <script type="module" crossorigin src="/assets/index-B5sEOYLz.js"></script>
 </head>
 
 <body>
@@ -433,6 +553,68 @@
                         <div id="player2-sets-container"></div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Statistics Panel -->
+        <div class="stats-section">
+            <button class="stats-toggle" id="statsToggle" onclick="toggleStats()">
+                <span class="stats-icon">📊</span>
+                <span class="stats-label">Match Statistics</span>
+                <span class="stats-chevron" id="statsChevron">▼</span>
+            </button>
+            <div class="stats-panel" id="statsPanel">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th class="stat-name">Statistic</th>
+                            <th class="stat-value" id="statsPlayer1Header">Player 1</th>
+                            <th class="stat-value" id="statsPlayer2Header">Player 2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="stat-name">1st Serve %</td>
+                            <td class="stat-value" id="stat-firstServe-1">0% (0/0)</td>
+                            <td class="stat-value" id="stat-firstServe-2">0% (0/0)</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">2nd Serve %</td>
+                            <td class="stat-value" id="stat-secondServe-1">0% (0/0)</td>
+                            <td class="stat-value" id="stat-secondServe-2">0% (0/0)</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Aces</td>
+                            <td class="stat-value" id="stat-aces-1">0</td>
+                            <td class="stat-value" id="stat-aces-2">0</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Double Faults</td>
+                            <td class="stat-value" id="stat-doubleFaults-1">0</td>
+                            <td class="stat-value" id="stat-doubleFaults-2">0</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Winners</td>
+                            <td class="stat-value" id="stat-winners-1">0</td>
+                            <td class="stat-value" id="stat-winners-2">0</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Unforced Errors</td>
+                            <td class="stat-value" id="stat-unforcedErrors-1">0</td>
+                            <td class="stat-value" id="stat-unforcedErrors-2">0</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Forced Errors</td>
+                            <td class="stat-value" id="stat-forcedErrors-1">0</td>
+                            <td class="stat-value" id="stat-forcedErrors-2">0</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Net Points Won</td>
+                            <td class="stat-value" id="stat-netPoints-1">0</td>
+                            <td class="stat-value" id="stat-netPoints-2">0</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -483,9 +665,88 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label class="form-label" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                    <input type="checkbox" id="detailedStatsMode" style="width: 20px; height: 20px; cursor: pointer;">
+                    <span>Enable Detailed Statistics Mode</span>
+                </label>
+                <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 8px; margin-left: 32px;">
+                    Track serves, winners, and errors for each point
+                </p>
+            </div>
+
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
                 <button class="btn" onclick="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Input Modal -->
+    <div id="statInputModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Point Statistics</h2>
+                <button class="close" onclick="closeStatInputModal()">&times;</button>
+            </div>
+
+            <div style="margin-bottom: 20px; padding: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
+                <strong id="statModalPointInfo">Point to Player 1</strong>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Serve</label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="1-in" onclick="selectStatButton(this)">
+                        1st In <span style="opacity: 0.7; font-size: 0.85rem;">(S)</span>
+                    </button>
+                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="1-fault" onclick="selectStatButton(this)">
+                        1st Fault <span style="opacity: 0.7; font-size: 0.85rem;">(F)</span>
+                    </button>
+                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="2-in" onclick="selectStatButton(this)">
+                        2nd In
+                    </button>
+                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="2-fault" onclick="selectStatButton(this)">
+                        2nd Fault (DF) <span style="opacity: 0.7; font-size: 0.85rem;">(D)</span>
+                    </button>
+                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="ace" onclick="selectStatButton(this)">
+                        Ace <span style="opacity: 0.7; font-size: 0.85rem;">(A)</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Point Type</label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="winner" onclick="selectStatButton(this)">
+                        Winner <span style="opacity: 0.7; font-size: 0.85rem;">(W)</span>
+                    </button>
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="unforced_error" onclick="selectStatButton(this)">
+                        Unforced Error <span style="opacity: 0.7; font-size: 0.85rem;">(U)</span>
+                    </button>
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="forced_error" onclick="selectStatButton(this)">
+                        Forced Error <span style="opacity: 0.7; font-size: 0.85rem;">(E)</span>
+                    </button>
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="net" onclick="selectStatButton(this)">
+                        Net Point <span style="opacity: 0.7; font-size: 0.85rem;">(N)</span>
+                    </button>
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="regular" onclick="selectStatButton(this)">
+                        Regular
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="skipStatInput()">
+                    Skip <span style="opacity: 0.7; font-size: 0.85rem;">(Esc)</span>
+                </button>
+                <button class="btn" onclick="confirmStatInput()">
+                    Confirm <span style="opacity: 0.7; font-size: 0.85rem;">(Enter)</span>
+                </button>
+            </div>
+
+            <div style="margin-top: 16px; font-size: 0.85rem; opacity: 0.7; text-align: center;">
+                Press keyboard shortcuts or click buttons
             </div>
         </div>
     </div>
@@ -499,6 +760,11 @@
                 document.getElementById('setsToWin').value = config.setsToWin;
                 document.getElementById('theme').value = config.theme;
             }
+
+            // Load detailed stats mode setting
+            const detailedMode = localStorage.getItem('detailedStatsMode') === 'true';
+            document.getElementById('detailedStatsMode').checked = detailedMode;
+
             document.getElementById('settingsModal').style.display = 'block';
         }
 
@@ -510,6 +776,7 @@
             const gamesPerSet = parseInt(document.getElementById('gamesPerSet').value);
             const setsToWin = parseInt(document.getElementById('setsToWin').value);
             const theme = document.getElementById('theme').value;
+            const detailedStatsMode = document.getElementById('detailedStatsMode').checked;
 
             if (typeof scorer !== 'undefined') {
                 scorer.updateConfig({
@@ -518,6 +785,9 @@
                     theme: theme
                 });
             }
+
+            // Save detailed stats mode setting
+            localStorage.setItem('detailedStatsMode', detailedStatsMode.toString());
 
             closeSettingsModal();
         }
@@ -529,6 +799,183 @@
                 closeSettingsModal();
             }
         }
+
+        // Statistics panel toggle functionality
+        function toggleStats() {
+            const statsPanel = document.getElementById('statsPanel');
+            const statsChevron = document.getElementById('statsChevron');
+
+            if (statsPanel && statsChevron) {
+                const isExpanded = statsPanel.classList.contains('expanded');
+
+                if (isExpanded) {
+                    statsPanel.classList.remove('expanded');
+                    statsChevron.classList.remove('expanded');
+                    localStorage.setItem('statsExpanded', 'false');
+                } else {
+                    statsPanel.classList.add('expanded');
+                    statsChevron.classList.add('expanded');
+                    localStorage.setItem('statsExpanded', 'true');
+                }
+            }
+        }
+
+        // Restore stats panel state on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const statsExpanded = localStorage.getItem('statsExpanded');
+            const statsPanel = document.getElementById('statsPanel');
+            const statsChevron = document.getElementById('statsChevron');
+
+            // Default to collapsed, but expand if user previously had it expanded
+            if (statsExpanded === 'true' && statsPanel && statsChevron) {
+                statsPanel.classList.add('expanded');
+                statsChevron.classList.add('expanded');
+            }
+        });
+
+        // Stat Input Modal State
+        let currentStatPlayer = null;
+        let selectedServe = null;
+        let selectedType = null;
+
+        function openStatInputModal(player) {
+            currentStatPlayer = player;
+            selectedServe = null;
+            selectedType = null;
+
+            // Clear all selections
+            document.querySelectorAll('.stat-btn').forEach(btn => btn.classList.remove('selected'));
+
+            // Update modal title
+            const playerNameEl = document.getElementById(`player${player}NameSpan`);
+            const playerName = playerNameEl?.textContent || `Player ${player}`;
+            document.getElementById('statModalPointInfo').textContent = `Point to ${playerName}`;
+
+            // Show modal
+            document.getElementById('statInputModal').style.display = 'block';
+        }
+
+        function closeStatInputModal() {
+            document.getElementById('statInputModal').style.display = 'none';
+            currentStatPlayer = null;
+            selectedServe = null;
+            selectedType = null;
+        }
+
+        function selectStatButton(button) {
+            const statType = button.dataset.stat;
+            const value = button.dataset.value;
+
+            // Remove selection from buttons of same type
+            document.querySelectorAll(`.stat-btn[data-stat="${statType}"]`).forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            // Select this button
+            button.classList.add('selected');
+
+            // Store selection
+            if (statType === 'serve') {
+                selectedServe = value;
+            } else if (statType === 'type') {
+                selectedType = value;
+            }
+        }
+
+        function confirmStatInput() {
+            if (!currentStatPlayer) return;
+
+            // Build metadata object
+            const metadata = {};
+
+            // Parse serve selection
+            if (selectedServe) {
+                if (selectedServe === 'ace') {
+                    metadata.serveNumber = 1;
+                    metadata.serveResult = 'ace';
+                    metadata.pointType = 'winner';
+                } else if (selectedServe.includes('-')) {
+                    const [serveNum, result] = selectedServe.split('-');
+                    metadata.serveNumber = parseInt(serveNum);
+                    metadata.serveResult = result;
+                }
+            }
+
+            // Add point type if selected and not already set by ace
+            if (selectedType && !metadata.pointType) {
+                metadata.pointType = selectedType;
+            }
+
+            // Score the point with stats
+            if (typeof scorer !== 'undefined') {
+                scorer.scorePointWithStats(currentStatPlayer, metadata);
+            }
+
+            closeStatInputModal();
+        }
+
+        function skipStatInput() {
+            if (!currentStatPlayer) return;
+
+            // Score without detailed stats
+            if (typeof scorer !== 'undefined') {
+                scorer.scorePoint(currentStatPlayer);
+            }
+
+            closeStatInputModal();
+        }
+
+        // Keyboard shortcuts for stat input modal
+        document.addEventListener('keydown', function(event) {
+            const modal = document.getElementById('statInputModal');
+            if (modal.style.display !== 'block') return;
+
+            // Don't interfere with input fields
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
+
+            switch(event.key.toLowerCase()) {
+                case 's': // 1st serve in
+                    document.querySelector('[data-value="1-in"]')?.click();
+                    event.preventDefault();
+                    break;
+                case 'f': // 1st serve fault
+                    document.querySelector('[data-value="1-fault"]')?.click();
+                    event.preventDefault();
+                    break;
+                case 'd': // Double fault (2nd serve fault)
+                    document.querySelector('[data-value="2-fault"]')?.click();
+                    event.preventDefault();
+                    break;
+                case 'a': // Ace
+                    document.querySelector('[data-value="ace"]')?.click();
+                    event.preventDefault();
+                    break;
+                case 'w': // Winner
+                    document.querySelector('[data-value="winner"]')?.click();
+                    event.preventDefault();
+                    break;
+                case 'u': // Unforced error
+                    document.querySelector('[data-value="unforced_error"]')?.click();
+                    event.preventDefault();
+                    break;
+                case 'e': // Forced error
+                    document.querySelector('[data-value="forced_error"]')?.click();
+                    event.preventDefault();
+                    break;
+                case 'n': // Net point
+                    document.querySelector('[data-value="net"]')?.click();
+                    event.preventDefault();
+                    break;
+                case 'enter':
+                    confirmStatInput();
+                    event.preventDefault();
+                    break;
+                case 'escape':
+                    skipStatInput();
+                    event.preventDefault();
+                    break;
+            }
+        });
     </script>
 </body>
 

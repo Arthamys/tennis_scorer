@@ -20,7 +20,16 @@ const scorer = new ScoreKeeper();
 
 // Global functions for button clicks
 function scorePoint(player: 1 | 2): void {
-    scorer.scorePoint(player);
+    // Check if detailed stats mode is enabled
+    const detailedStatsMode = localStorage.getItem('detailedStatsMode') === 'true';
+
+    if (detailedStatsMode) {
+        // Open stat input modal
+        (window as any).openStatInputModal(player);
+    } else {
+        // Score directly without stats
+        scorer.scorePoint(player);
+    }
 }
 
 function removePoint(player: 1 | 2): void {
