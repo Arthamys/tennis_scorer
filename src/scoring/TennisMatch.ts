@@ -242,6 +242,8 @@ export class TennisMatch {
                     serverStats.firstServesIn++;
                 }
             } else if (metadata.serveNumber === 2) {
+                // A second serve implies a first serve fault occurred
+                serverStats.firstServesTotal++;
                 serverStats.secondServesTotal++;
                 if (metadata.serveResult === 'in' || metadata.serveResult === 'ace') {
                     serverStats.secondServesIn++;
@@ -316,6 +318,8 @@ export class TennisMatch {
                     serverStats.firstServesIn = Math.max(0, serverStats.firstServesIn - 1);
                 }
             } else if (metadata.serveNumber === 2) {
+                // Also reverse the implied first serve fault
+                serverStats.firstServesTotal = Math.max(0, serverStats.firstServesTotal - 1);
                 serverStats.secondServesTotal = Math.max(0, serverStats.secondServesTotal - 1);
                 if (metadata.serveResult === 'in' || metadata.serveResult === 'ace') {
                     serverStats.secondServesIn = Math.max(0, serverStats.secondServesIn - 1);

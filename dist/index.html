@@ -508,7 +508,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/index-B5sEOYLz.js"></script>
+  <script type="module" crossorigin src="/assets/index-CzP0l4kZ.js"></script>
 </head>
 
 <body>
@@ -700,14 +700,11 @@
                     <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="1-in" onclick="selectStatButton(this)">
                         1st In <span style="opacity: 0.7; font-size: 0.85rem;">(S)</span>
                     </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="1-fault" onclick="selectStatButton(this)">
-                        1st Fault <span style="opacity: 0.7; font-size: 0.85rem;">(F)</span>
-                    </button>
                     <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="2-in" onclick="selectStatButton(this)">
-                        2nd In
+                        2nd In <span style="opacity: 0.7; font-size: 0.85rem;">(F)</span>
                     </button>
                     <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="2-fault" onclick="selectStatButton(this)">
-                        2nd Fault (DF) <span style="opacity: 0.7; font-size: 0.85rem;">(D)</span>
+                        2nd Fault <span style="opacity: 0.7; font-size: 0.85rem;">(D)</span>
                     </button>
                     <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="ace" onclick="selectStatButton(this)">
                         Ace <span style="opacity: 0.7; font-size: 0.85rem;">(A)</span>
@@ -877,6 +874,10 @@
             // Store selection
             if (statType === 'serve') {
                 selectedServe = value;
+                // Auto-submit for double fault (no point type needed)
+                if (value === '2-fault') {
+                    confirmStatInput();
+                }
             } else if (statType === 'type') {
                 selectedType = value;
             }
@@ -938,8 +939,8 @@
                     document.querySelector('[data-value="1-in"]')?.click();
                     event.preventDefault();
                     break;
-                case 'f': // 1st serve fault
-                    document.querySelector('[data-value="1-fault"]')?.click();
+                case 'f': // 2nd serve in
+                    document.querySelector('[data-value="2-in"]')?.click();
                     event.preventDefault();
                     break;
                 case 'd': // Double fault (2nd serve fault)
