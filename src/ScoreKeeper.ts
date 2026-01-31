@@ -16,7 +16,7 @@
  * - display package: For rendering match state to HTML
  */
 
-import { TennisMatch, MatchConfig } from './scoring/index.js';
+import { TennisMatch, MatchConfig, PointMetadata } from './scoring/index.js';
 import { TennisDisplayRenderer } from './display/index.js';
 import domtoimage from 'dom-to-image';
 import { saveAs } from 'file-saver';
@@ -51,17 +51,9 @@ export class ScoreKeeper {
     }
 
     /**
-     * Score a point for the specified player
-     */
-    public scorePoint(player: 1 | 2): void {
-        this.match.scorePoint(player);
-        this.updateDisplay();
-    }
-
-    /**
      * Score a point with detailed statistics (for testing/advanced use)
      */
-    public scorePointWithStats(player: 1 | 2, metadata: any): void {
+    public scorePointWithStats(player: 1 | 2, metadata: PointMetadata): void {
         this.match.scorePointWithStats(player, metadata);
         this.updateDisplay();
     }
@@ -129,23 +121,41 @@ export class ScoreKeeper {
         console.log("Points history: ", pointsHistory);
         const zip = new JSZip();
 
+        // Expand stats panel before export and track original state
+        const statsPanel = document.getElementById("statsPanel");
+        const wasExpanded = statsPanel?.classList.contains("expanded") ?? false;
+        if (statsPanel && !wasExpanded) {
+            statsPanel.classList.add("expanded");
+        }
+
         // Start a fresh match before replaying the points
         this.resetMatch();
         const first_card = await this.generateScoreCard();
         zip.file("000_scorecard_match_opener.png", first_card);
+        const first_stats = await this.generateStatsCard();
+        zip.file("000_stats_match_opener.png", first_stats);
         for (let i = 0; i < pointsHistory.length; i++) {
+            // Small delay to ensure DOM updates
             await sleep(200);
             // Handle both old format (number) and new format (PointMetadata)
             const point = pointsHistory[i];
-            const winner = typeof point === 'number' ? point : point.winner;
-            this.scorePoint(winner);
+
+            this.scorePointWithStats(point.winner, point);
             const currentSet = state.pastSetScores.length + 1;
             const currentGame = state.player1.games + this.match.getState().player2.games + 1;
             const currentPoint = state.player1.points + this.match.getState().player2.points;
             const frame = (i + 1).toString().padStart(3, '0');
-            const scorecard = this.generateScoreCard();
-            zip.file(frame + "_set_" + currentSet + "_game_" + currentGame + "_point_" + currentPoint + ".png", scorecard)
+            const scorecard = await this.generateScoreCard();
+            zip.file(frame + "_set_" + currentSet + "_game_" + currentGame + "_point_" + currentPoint + ".png", scorecard);
+            const statscard = await this.generateStatsCard();
+            zip.file(frame + "_stats_set_" + currentSet + "_game_" + currentGame + "_point_" + currentPoint + ".png", statscard);
         }
+
+        // Restore stats panel to original state
+        if (statsPanel && !wasExpanded) {
+            statsPanel.classList.remove("expanded");
+        }
+
         // Generate and download single ZIP file
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         saveAs(zipBlob, 'score_cards.zip');
@@ -175,5 +185,13 @@ export class ScoreKeeper {
     private async generateScoreCard(): Promise<Blob> {
         let scoreDisplay = document.getElementById("score-display");
         return domtoimage.toBlob(scoreDisplay as HTMLElement)
+    }
+
+    /**
+     * Download a png snapshot of the statistics panel
+     */
+    private async generateStatsCard(): Promise<Blob> {
+        const statsPanel = document.getElementById("statsPanel");
+        return domtoimage.toBlob(statsPanel as HTMLElement);
     }
 }

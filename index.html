@@ -704,19 +704,13 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label">Serve</label>
+                <label class="form-label">Serve Result</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="1-in" onclick="selectStatButton(this)">
+                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="first" onclick="selectStatButton(this)">
                         1st In <span style="opacity: 0.7; font-size: 0.85rem;">(S)</span>
                     </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="2-in" onclick="selectStatButton(this)">
+                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="second" onclick="selectStatButton(this)">
                         2nd In <span style="opacity: 0.7; font-size: 0.85rem;">(F)</span>
-                    </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="2-fault" onclick="selectStatButton(this)">
-                        2nd Fault <span style="opacity: 0.7; font-size: 0.85rem;">(D)</span>
-                    </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="ace" onclick="selectStatButton(this)">
-                        Ace <span style="opacity: 0.7; font-size: 0.85rem;">(A)</span>
                     </button>
                 </div>
             </div>
@@ -724,6 +718,12 @@
             <div class="form-group">
                 <label class="form-label">Point Type</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="ace" onclick="selectStatButton(this)">
+                        Ace <span style="opacity: 0.7; font-size: 0.85rem;">(A)</span>
+                    </button>
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="double_fault" onclick="selectStatButton(this)">
+                        Double Fault <span style="opacity: 0.7; font-size: 0.85rem;">(D)</span>
+                    </button>
                     <button class="btn btn-secondary stat-btn" data-stat="type" data-value="winner" onclick="selectStatButton(this)">
                         Winner <span style="opacity: 0.7; font-size: 0.85rem;">(W)</span>
                     </button>
@@ -887,12 +887,12 @@
             // Store selection
             if (statType === 'serve') {
                 selectedServe = value;
-                // Auto-submit for double fault (no point type needed)
-                if (value === '2-fault') {
-                    confirmStatInput();
-                }
             } else if (statType === 'type') {
                 selectedType = value;
+                // Auto-submit for double fault (no serve result needed)
+                if (value === 'double_fault') {
+                    confirmStatInput();
+                }
             }
         }
 
@@ -902,28 +902,24 @@
             // Build metadata object
             const metadata = {};
 
-            // Parse serve selection
+            // Add serve result if selected
             if (selectedServe) {
-                if (selectedServe === 'ace') {
-                    metadata.serveNumber = 1;
-                    metadata.serveResult = 'ace';
-                    metadata.pointType = 'winner';
-                } else if (selectedServe.includes('-')) {
-                    const [serveNum, result] = selectedServe.split('-');
-                    metadata.serveNumber = parseInt(serveNum);
-                    metadata.serveResult = result;
-                }
+                metadata.serveResult = selectedServe; // 'first' or 'second'
             }
 
-            // Add point type if selected and not already set by ace
-            if (selectedType && !metadata.pointType) {
+            // Add point type if selected
+            if (selectedType) {
                 metadata.pointType = selectedType;
             }
 
-            // Default to first serve for missed returns if no serve type selected
-            if (metadata.pointType === 'missed_return' && !metadata.serveNumber) {
-                metadata.serveNumber = 1;
-                metadata.serveResult = 'in';
+            // Default to first serve for missed returns if no serve result selected
+            if (metadata.pointType === 'missed_return' && !metadata.serveResult) {
+                metadata.serveResult = 'first';
+            }
+
+            // Default to first serve for aces if no serve result selected
+            if (metadata.pointType === 'ace' && !metadata.serveResult) {
+                metadata.serveResult = 'first';
             }
 
             // Score the point with stats
@@ -955,19 +951,19 @@
 
             switch(event.key.toLowerCase()) {
                 case 's': // 1st serve in
-                    document.querySelector('[data-value="1-in"]')?.click();
+                    document.querySelector('[data-value="first"]')?.click();
                     event.preventDefault();
                     break;
                 case 'f': // 2nd serve in
-                    document.querySelector('[data-value="2-in"]')?.click();
-                    event.preventDefault();
-                    break;
-                case 'd': // Double fault (2nd serve fault)
-                    document.querySelector('[data-value="2-fault"]')?.click();
+                    document.querySelector('[data-value="second"]')?.click();
                     event.preventDefault();
                     break;
                 case 'a': // Ace
                     document.querySelector('[data-value="ace"]')?.click();
+                    event.preventDefault();
+                    break;
+                case 'd': // Double fault
+                    document.querySelector('[data-value="double_fault"]')?.click();
                     event.preventDefault();
                     break;
                 case 'w': // Winner

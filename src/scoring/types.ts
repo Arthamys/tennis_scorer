@@ -22,9 +22,8 @@ export interface MatchConfig {
 export interface PointMetadata {
     winner: 1 | 2; // Which player won the point
     server: 1 | 2; // Who was serving
-    serveNumber?: 1 | 2; // First or second serve (undefined if not tracked)
-    serveResult?: 'in' | 'fault' | 'ace'; // Result of the serve (undefined if not tracked)
-    pointType?: 'winner' | 'unforced_error' | 'forced_error' | 'net' | 'regular' | 'missed_return'; // How the point ended
+    serveResult?: 'first' | 'second'; // Which serve landed (undefined if not tracked or double fault)
+    pointType?: 'ace' | 'double_fault' | 'winner' | 'unforced_error' | 'forced_error' | 'net' | 'regular' | 'missed_return'; // How the point ended
 }
 
 /// Statistics tracked for each player during the match.
@@ -155,7 +154,7 @@ export interface MatchState {
     pastSetScores: SetScore[];
     matchWinner: 1 | 2 | null;
     isTieBreak: boolean;
-    pointsHistory: Array<1 | 2 | PointMetadata>; // Can be simple (1|2) for backward compatibility or detailed metadata
+    pointsHistory: Array<PointMetadata>;
     player1Stats: PlayerStatistics;
     player2Stats: PlayerStatistics;
 }

@@ -235,28 +235,29 @@ export class TennisMatch {
         const serverStats = server === 1 ? this.state.player1Stats : this.state.player2Stats;
 
         // Track serve statistics if provided
-        if (metadata.serveNumber !== undefined) {
-            if (metadata.serveNumber === 1) {
+        if (metadata.serveResult !== undefined) {
+            if (metadata.serveResult === 'first') {
                 serverStats.firstServesTotal++;
-                if (metadata.serveResult === 'in' || metadata.serveResult === 'ace') {
-                    serverStats.firstServesIn++;
-                }
-            } else if (metadata.serveNumber === 2) {
+                serverStats.firstServesIn++;
+            } else if (metadata.serveResult === 'second') {
                 // A second serve implies a first serve fault occurred
                 serverStats.firstServesTotal++;
                 serverStats.secondServesTotal++;
-                if (metadata.serveResult === 'in' || metadata.serveResult === 'ace') {
-                    serverStats.secondServesIn++;
-                }
+                serverStats.secondServesIn++;
             }
         }
 
-        // Track serve outcomes
-        if (metadata.serveResult === 'ace') {
-            serverStats.aces++;
-        } else if (metadata.serveResult === 'fault' && metadata.serveNumber === 2) {
-            // Double fault (second serve was a fault)
+        // Track double faults
+        if (metadata.pointType === 'double_fault') {
+            // Double fault counts both first and second serve attempts
+            serverStats.firstServesTotal++;
+            serverStats.secondServesTotal++;
             serverStats.doubleFaults++;
+        }
+
+        // Track aces
+        if (metadata.pointType === 'ace') {
+            serverStats.aces++;
         }
 
         // Track point type statistics
@@ -270,36 +271,36 @@ export class TennisMatch {
             winnerStats.pointsWonAtNet++;
         } else if (metadata.pointType === 'missed_return') {
             // Track missed returns for the returner (loser)
-            if (metadata.serveNumber === 1) {
+            if (metadata.serveResult === 'first') {
                 loserStats.firstServeMissedReturns++;
-            } else if (metadata.serveNumber === 2) {
+            } else if (metadata.serveResult === 'second') {
                 loserStats.secondServeMissedReturns++;
             }
         }
 
         // Track points won on serve
-        if (winner === server && metadata.serveNumber !== undefined) {
-            if (metadata.serveNumber === 1) {
+        if (winner === server && metadata.serveResult !== undefined) {
+            if (metadata.serveResult === 'first') {
                 winnerStats.pointsWonOnFirstServe++;
-            } else if (metadata.serveNumber === 2) {
+            } else if (metadata.serveResult === 'second') {
                 winnerStats.pointsWonOnSecondServe++;
             }
         }
 
         // Track return statistics (when receiver wins the point)
-        if (winner !== server && metadata.serveNumber !== undefined) {
-            if (metadata.serveNumber === 1) {
+        if (winner !== server && metadata.serveResult !== undefined) {
+            if (metadata.serveResult === 'first') {
                 winnerStats.firstServeReturns++;
                 winnerStats.pointsWonOnFirstServeReturn++;
-            } else if (metadata.serveNumber === 2) {
+            } else if (metadata.serveResult === 'second') {
                 winnerStats.secondServeReturns++;
                 winnerStats.pointsWonOnSecondServeReturn++;
             }
-        } else if (loser !== server && metadata.serveNumber !== undefined && metadata.pointType !== 'missed_return') {
+        } else if (loser !== server && metadata.serveResult !== undefined && metadata.pointType !== 'missed_return') {
             // Loser attempted a return but didn't win (only if they didn't miss the return)
-            if (metadata.serveNumber === 1) {
+            if (metadata.serveResult === 'first') {
                 loserStats.firstServeReturns++;
-            } else if (metadata.serveNumber === 2) {
+            } else if (metadata.serveResult === 'second') {
                 loserStats.secondServeReturns++;
             }
         }
@@ -318,27 +319,28 @@ export class TennisMatch {
         const serverStats = server === 1 ? this.state.player1Stats : this.state.player2Stats;
 
         // Reverse serve statistics if provided
-        if (metadata.serveNumber !== undefined) {
-            if (metadata.serveNumber === 1) {
+        if (metadata.serveResult !== undefined) {
+            if (metadata.serveResult === 'first') {
                 serverStats.firstServesTotal = Math.max(0, serverStats.firstServesTotal - 1);
-                if (metadata.serveResult === 'in' || metadata.serveResult === 'ace') {
-                    serverStats.firstServesIn = Math.max(0, serverStats.firstServesIn - 1);
-                }
-            } else if (metadata.serveNumber === 2) {
+                serverStats.firstServesIn = Math.max(0, serverStats.firstServesIn - 1);
+            } else if (metadata.serveResult === 'second') {
                 // Also reverse the implied first serve fault
                 serverStats.firstServesTotal = Math.max(0, serverStats.firstServesTotal - 1);
                 serverStats.secondServesTotal = Math.max(0, serverStats.secondServesTotal - 1);
-                if (metadata.serveResult === 'in' || metadata.serveResult === 'ace') {
-                    serverStats.secondServesIn = Math.max(0, serverStats.secondServesIn - 1);
-                }
+                serverStats.secondServesIn = Math.max(0, serverStats.secondServesIn - 1);
             }
         }
 
-        // Reverse serve outcomes
-        if (metadata.serveResult === 'ace') {
-            serverStats.aces = Math.max(0, serverStats.aces - 1);
-        } else if (metadata.serveResult === 'fault' && metadata.serveNumber === 2) {
+        // Reverse double faults
+        if (metadata.pointType === 'double_fault') {
+            serverStats.firstServesTotal = Math.max(0, serverStats.firstServesTotal - 1);
+            serverStats.secondServesTotal = Math.max(0, serverStats.secondServesTotal - 1);
             serverStats.doubleFaults = Math.max(0, serverStats.doubleFaults - 1);
+        }
+
+        // Reverse aces
+        if (metadata.pointType === 'ace') {
+            serverStats.aces = Math.max(0, serverStats.aces - 1);
         }
 
         // Reverse point type statistics
@@ -352,35 +354,35 @@ export class TennisMatch {
             winnerStats.pointsWonAtNet = Math.max(0, winnerStats.pointsWonAtNet - 1);
         } else if (metadata.pointType === 'missed_return') {
             // Reverse missed returns for the returner (loser)
-            if (metadata.serveNumber === 1) {
+            if (metadata.serveResult === 'first') {
                 loserStats.firstServeMissedReturns = Math.max(0, loserStats.firstServeMissedReturns - 1);
-            } else if (metadata.serveNumber === 2) {
+            } else if (metadata.serveResult === 'second') {
                 loserStats.secondServeMissedReturns = Math.max(0, loserStats.secondServeMissedReturns - 1);
             }
         }
 
         // Reverse points won on serve
-        if (winner === server && metadata.serveNumber !== undefined) {
-            if (metadata.serveNumber === 1) {
+        if (winner === server && metadata.serveResult !== undefined) {
+            if (metadata.serveResult === 'first') {
                 winnerStats.pointsWonOnFirstServe = Math.max(0, winnerStats.pointsWonOnFirstServe - 1);
-            } else if (metadata.serveNumber === 2) {
+            } else if (metadata.serveResult === 'second') {
                 winnerStats.pointsWonOnSecondServe = Math.max(0, winnerStats.pointsWonOnSecondServe - 1);
             }
         }
 
         // Reverse return statistics
-        if (winner !== server && metadata.serveNumber !== undefined) {
-            if (metadata.serveNumber === 1) {
+        if (winner !== server && metadata.serveResult !== undefined) {
+            if (metadata.serveResult === 'first') {
                 winnerStats.firstServeReturns = Math.max(0, winnerStats.firstServeReturns - 1);
                 winnerStats.pointsWonOnFirstServeReturn = Math.max(0, winnerStats.pointsWonOnFirstServeReturn - 1);
-            } else if (metadata.serveNumber === 2) {
+            } else if (metadata.serveResult === 'second') {
                 winnerStats.secondServeReturns = Math.max(0, winnerStats.secondServeReturns - 1);
                 winnerStats.pointsWonOnSecondServeReturn = Math.max(0, winnerStats.pointsWonOnSecondServeReturn - 1);
             }
-        } else if (loser !== server && metadata.serveNumber !== undefined && metadata.pointType !== 'missed_return') {
-            if (metadata.serveNumber === 1) {
+        } else if (loser !== server && metadata.serveResult !== undefined && metadata.pointType !== 'missed_return') {
+            if (metadata.serveResult === 'first') {
                 loserStats.firstServeReturns = Math.max(0, loserStats.firstServeReturns - 1);
-            } else if (metadata.serveNumber === 2) {
+            } else if (metadata.serveResult === 'second') {
                 loserStats.secondServeReturns = Math.max(0, loserStats.secondServeReturns - 1);
             }
         }
