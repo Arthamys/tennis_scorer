@@ -268,6 +268,13 @@ export class TennisMatch {
             loserStats.forcedErrors++;
         } else if (metadata.pointType === 'net') {
             winnerStats.pointsWonAtNet++;
+        } else if (metadata.pointType === 'missed_return') {
+            // Track missed returns for the returner (loser)
+            if (metadata.serveNumber === 1) {
+                loserStats.firstServeMissedReturns++;
+            } else if (metadata.serveNumber === 2) {
+                loserStats.secondServeMissedReturns++;
+            }
         }
 
         // Track points won on serve
@@ -288,8 +295,8 @@ export class TennisMatch {
                 winnerStats.secondServeReturns++;
                 winnerStats.pointsWonOnSecondServeReturn++;
             }
-        } else if (loser !== server && metadata.serveNumber !== undefined) {
-            // Loser attempted a return but didn't win
+        } else if (loser !== server && metadata.serveNumber !== undefined && metadata.pointType !== 'missed_return') {
+            // Loser attempted a return but didn't win (only if they didn't miss the return)
             if (metadata.serveNumber === 1) {
                 loserStats.firstServeReturns++;
             } else if (metadata.serveNumber === 2) {
@@ -343,6 +350,13 @@ export class TennisMatch {
             loserStats.forcedErrors = Math.max(0, loserStats.forcedErrors - 1);
         } else if (metadata.pointType === 'net') {
             winnerStats.pointsWonAtNet = Math.max(0, winnerStats.pointsWonAtNet - 1);
+        } else if (metadata.pointType === 'missed_return') {
+            // Reverse missed returns for the returner (loser)
+            if (metadata.serveNumber === 1) {
+                loserStats.firstServeMissedReturns = Math.max(0, loserStats.firstServeMissedReturns - 1);
+            } else if (metadata.serveNumber === 2) {
+                loserStats.secondServeMissedReturns = Math.max(0, loserStats.secondServeMissedReturns - 1);
+            }
         }
 
         // Reverse points won on serve
@@ -363,7 +377,7 @@ export class TennisMatch {
                 winnerStats.secondServeReturns = Math.max(0, winnerStats.secondServeReturns - 1);
                 winnerStats.pointsWonOnSecondServeReturn = Math.max(0, winnerStats.pointsWonOnSecondServeReturn - 1);
             }
-        } else if (loser !== server && metadata.serveNumber !== undefined) {
+        } else if (loser !== server && metadata.serveNumber !== undefined && metadata.pointType !== 'missed_return') {
             if (metadata.serveNumber === 1) {
                 loserStats.firstServeReturns = Math.max(0, loserStats.firstServeReturns - 1);
             } else if (metadata.serveNumber === 2) {

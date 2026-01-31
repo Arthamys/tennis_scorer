@@ -420,7 +420,7 @@
         }
 
         .stats-panel.expanded {
-            max-height: 500px;
+            max-height: 600px;
         }
 
         .stats-table {
@@ -508,7 +508,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/index-CzP0l4kZ.js"></script>
+  <script type="module" crossorigin src="/assets/index-Em24475f.js"></script>
 </head>
 
 <body>
@@ -612,6 +612,16 @@
                             <td class="stat-name">Net Points Won</td>
                             <td class="stat-value" id="stat-netPoints-1">0</td>
                             <td class="stat-value" id="stat-netPoints-2">0</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">1st Serve Return Missed</td>
+                            <td class="stat-value" id="stat-firstServeMissedReturns-1">0</td>
+                            <td class="stat-value" id="stat-firstServeMissedReturns-2">0</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">2nd Serve Return Missed</td>
+                            <td class="stat-value" id="stat-secondServeMissedReturns-1">0</td>
+                            <td class="stat-value" id="stat-secondServeMissedReturns-2">0</td>
                         </tr>
                     </tbody>
                 </table>
@@ -726,6 +736,9 @@
                     </button>
                     <button class="btn btn-secondary stat-btn" data-stat="type" data-value="net" onclick="selectStatButton(this)">
                         Net Point <span style="opacity: 0.7; font-size: 0.85rem;">(N)</span>
+                    </button>
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="missed_return" onclick="selectStatButton(this)">
+                        Missed Return <span style="opacity: 0.7; font-size: 0.85rem;">(R)</span>
                     </button>
                     <button class="btn btn-secondary stat-btn" data-stat="type" data-value="regular" onclick="selectStatButton(this)">
                         Regular
@@ -907,6 +920,12 @@
                 metadata.pointType = selectedType;
             }
 
+            // Default to first serve for missed returns if no serve type selected
+            if (metadata.pointType === 'missed_return' && !metadata.serveNumber) {
+                metadata.serveNumber = 1;
+                metadata.serveResult = 'in';
+            }
+
             // Score the point with stats
             if (typeof scorer !== 'undefined') {
                 scorer.scorePointWithStats(currentStatPlayer, metadata);
@@ -965,6 +984,10 @@
                     break;
                 case 'n': // Net point
                     document.querySelector('[data-value="net"]')?.click();
+                    event.preventDefault();
+                    break;
+                case 'r': // Missed return
+                    document.querySelector('[data-value="missed_return"]')?.click();
                     event.preventDefault();
                     break;
                 case 'enter':

@@ -24,7 +24,7 @@ export interface PointMetadata {
     server: 1 | 2; // Who was serving
     serveNumber?: 1 | 2; // First or second serve (undefined if not tracked)
     serveResult?: 'in' | 'fault' | 'ace'; // Result of the serve (undefined if not tracked)
-    pointType?: 'winner' | 'unforced_error' | 'forced_error' | 'net' | 'regular'; // How the point ended
+    pointType?: 'winner' | 'unforced_error' | 'forced_error' | 'net' | 'regular' | 'missed_return'; // How the point ended
 }
 
 /// Statistics tracked for each player during the match.
@@ -52,6 +52,10 @@ export interface PlayerStatistics {
     secondServeReturns: number; // Total second serves returned
     pointsWonOnFirstServeReturn: number; // Points won when returning a first serve
     pointsWonOnSecondServeReturn: number; // Points won when returning a second serve
+
+    // Missed returns
+    firstServeMissedReturns: number; // Returns missed on first serve
+    secondServeMissedReturns: number; // Returns missed on second serve
 }
 
 /// Helper functions to calculate percentages from statistics
@@ -84,6 +88,8 @@ export function createEmptyStatistics(): PlayerStatistics {
         secondServeReturns: 0,
         pointsWonOnFirstServeReturn: 0,
         pointsWonOnSecondServeReturn: 0,
+        firstServeMissedReturns: 0,
+        secondServeMissedReturns: 0,
     };
 }
 

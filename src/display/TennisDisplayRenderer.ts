@@ -241,6 +241,8 @@ export class TennisDisplayRenderer {
         this.updateStatElement('stat-unforcedErrors-1', p1Stats.unforcedErrors.toString());
         this.updateStatElement('stat-forcedErrors-1', p1Stats.forcedErrors.toString());
         this.updateStatElement('stat-netPoints-1', p1Stats.pointsWonAtNet.toString());
+        this.updateStatElement('stat-firstServeMissedReturns-1', p1Stats.firstServeMissedReturns.toString());
+        this.updateStatElement('stat-secondServeMissedReturns-1', p1Stats.secondServeMissedReturns.toString());
 
         // Update Player 2 statistics
         const p2Stats = state.player2Stats;
@@ -257,6 +259,8 @@ export class TennisDisplayRenderer {
         this.updateStatElement('stat-unforcedErrors-2', p2Stats.unforcedErrors.toString());
         this.updateStatElement('stat-forcedErrors-2', p2Stats.forcedErrors.toString());
         this.updateStatElement('stat-netPoints-2', p2Stats.pointsWonAtNet.toString());
+        this.updateStatElement('stat-firstServeMissedReturns-2', p2Stats.firstServeMissedReturns.toString());
+        this.updateStatElement('stat-secondServeMissedReturns-2', p2Stats.secondServeMissedReturns.toString());
     }
 
     /**
