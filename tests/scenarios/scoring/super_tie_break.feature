@@ -15,7 +15,7 @@ Feature: Super Tie-Break (Deciding Set)
     Then player 2 should have 1 sets
     # Both have 1 set, this is the deciding set
     # Super tie-break mode is entered when first point is scored
-    When player 1 scores a point on first serve as a winner
+    When player 1 scores a point
     Then the match should be in a tie-break
 
   Scenario: Player 1 wins super tie-break 10-0
@@ -23,7 +23,7 @@ Feature: Super Tie-Break (Deciding Set)
     When player 1 wins 6 games on first serve
     And player 2 wins 6 games on first serve
     # Win super tie-break with 10 points
-    When player 1 scores 10 consecutive points on first serve as winners
+    When player 1 scores 10 points
     Then player 1 should have won the match
 
   Scenario: Super tie-break requires 2-point margin
@@ -31,12 +31,12 @@ Feature: Super Tie-Break (Deciding Set)
     When player 1 wins 6 games on first serve
     And player 2 wins 6 games on first serve
     # Both score 9 points
-    When player 1 scores 9 consecutive points on first serve as winners
-    And player 2 scores 9 consecutive points on first serve as winners
+    When player 1 scores 9 points
+    And player 2 scores 9 points
     Then the match should be in a tie-break
     And the match should not be over
     # Need 2 point margin
-    When player 1 scores a point on first serve as a winner
+    When player 1 scores a point
     Then the match should not be over
-    When player 1 scores a point on first serve as a winner
+    When player 1 scores a point
     Then player 1 should have won the match

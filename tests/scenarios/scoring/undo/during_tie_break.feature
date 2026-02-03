@@ -9,14 +9,14 @@ Feature: Undo During Tie-Break
 
   Scenario: Undo point in tie-break
     # First point triggers tie-break mode
-    When player 1 scores a point on first serve as a winner
+    When player 1 scores a point
     Then the match should be in a tie-break
     And player 1 should have 1 points
     When player 1 undoes the last point
     Then player 1 should have 0 points
 
   Scenario: Undo multiple points in tie-break
-    When player 1 scores 3 consecutive points on first serve as winners
+    When player 1 scores 3 points
     Then player 1 should have 3 points
     When player 1 undoes the last point
     Then player 1 should have 2 points
