@@ -9,6 +9,15 @@ Feature: Server Switching During Tie-Break
 
   Scenario: Tie-break starts after first point at 6-6
     # Tie-break mode is entered when first point is scored at 6-6
-    When player 1 scores a point on first serve as a winner
+    When player 1 scores a point
     Then the match should be in a tie-break
     And player 1 should have 1 points
+    And player 2 should be serving
+
+  Scenario: Servers switch on odd points in a Tie-break
+    # Tie-break mode is entered when first point is scored at 6-6
+    When player 1 scores a point
+    Then the match should be in a tie-break
+    And player 2 should be serving
+    When player 1 scores 2 points
+    Then player 1 should be serving

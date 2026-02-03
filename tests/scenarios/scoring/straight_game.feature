@@ -6,16 +6,16 @@ Feature: Straight Game Win (Love Game)
   Background:
     Given a new match with default configuration
 
-  Scenario: Player 1 wins a love game with winners
-    When player 1 scores 4 consecutive points on first serve as winners
+  Scenario: Player 1 wins a love game
+    When player 1 scores 4 points
     Then player 1 should have 1 games
     And player 1 should have 0 points
     And player 2 should have 0 games
 
-  Scenario: Player 2 wins a love game with winners
+  Scenario: Player 2 wins a love game
     # First, player 1 wins a game so player 2 serves
-    When player 1 scores 4 consecutive points on first serve as winners
-    And player 2 scores 4 consecutive points on first serve as winners
+    When player 1 scores 4 points
+    And player 2 scores 4 points
     Then player 2 should have 1 games
     And the score should be 1-1 in games
 

@@ -11,5 +11,8 @@ Feature: Server Switching During Super Tie-Break
     When player 1 wins 6 games on first serve
     And player 2 wins 6 games on first serve
     # Super tie-break starts when first point is scored in deciding set
-    When player 1 scores a point on first serve as a winner
+    When player 1 scores a point
     Then the match should be in a tie-break
+    And player 2 should be serving
+    When player 1 scores 2 points
+    Then player 1 should be serving

@@ -18,6 +18,24 @@ const pointTypeMap: Record<string, PointMetadata['pointType']> = {
     'missed-return': 'missed_return',
 };
 
+When('player {int} scores a point', function (
+    this: TennisWorld,
+    player: number,
+) {
+    this.scorePoint(player as 1 | 2, 'first', 'winner');
+});
+
+
+When('player {int} scores {int} points', function (
+    this: TennisWorld,
+    player: number,
+    points: number,
+) {
+    for (let i = 0; i < points; i++) {
+        this.scorePoint(player as 1 | 2, 'first', 'winner');
+    }
+});
+
 When('player {int} scores a point on {word} serve as a/an {word}', function (
     this: TennisWorld,
     player: number,
