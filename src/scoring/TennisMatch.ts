@@ -142,6 +142,13 @@ export class TennisMatch {
                 this.state.player1.points = 0;
                 this.state.player2.points = 0;
                 this.state.isTieBreak = false;
+            } else {
+                // Tie-break server switching: switch on every odd total point
+                // Pattern: P1 serves point 1, P2 serves 2-3, P1 serves 4-5, etc.
+                const totalPoints = this.state.player1.points + this.state.player2.points;
+                if (totalPoints % 2 === 1) {
+                    this.switchServer();
+                }
             }
         } else {
             // Regular game win
