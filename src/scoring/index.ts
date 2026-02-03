@@ -8,3 +8,4 @@
 export { TennisMatch } from './TennisMatch.js';
 export type { MatchConfig, MatchState, PlayerScore, SetScore, PlayerStatistics, PointMetadata } from './types.js';
 export { calculateFirstServePercentage, calculateSecondServePercentage, createEmptyStatistics } from './types.js';
+export type { MatchStatisticsExport, MatchScoreExport, ExportMatchDetails, ExportPlayers, ExportFinalScore } from './exportTypes.js';

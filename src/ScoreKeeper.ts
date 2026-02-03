@@ -16,7 +16,7 @@
  * - display package: For rendering match state to HTML
  */
 
-import { TennisMatch, MatchConfig, PointMetadata } from './scoring/index.js';
+import { TennisMatch, MatchConfig, PointMetadata, MatchStatisticsExport, MatchScoreExport } from './scoring/index.js';
 import { TennisDisplayRenderer } from './display/index.js';
 import domtoimage from 'dom-to-image';
 import { saveAs } from 'file-saver';
@@ -151,6 +151,12 @@ export class ScoreKeeper {
             zip.file(frame + "_stats_set_" + currentSet + "_game_" + currentGame + "_point_" + currentPoint + ".png", statscard);
         }
 
+        // Add JSON export files
+        const matchStatistics = this.generateMatchStatistics();
+        const matchScore = this.generateMatchScore();
+        zip.file('match-statistics.json', JSON.stringify(matchStatistics, null, 2));
+        zip.file('match-score.json', JSON.stringify(matchScore, null, 2));
+
         // Restore stats panel to original state
         if (statsPanel && !wasExpanded) {
             statsPanel.classList.remove("expanded");
@@ -193,5 +199,90 @@ export class ScoreKeeper {
     private async generateStatsCard(): Promise<Blob> {
         const statsPanel = document.getElementById("statsPanel");
         return domtoimage.toBlob(statsPanel as HTMLElement);
+    }
+
+    /**
+     * Get player names from DOM elements
+     */
+    private getPlayerNames(): { player1: string; player2: string } {
+        const player1NameSpan = document.getElementById('player1NameSpan');
+        const player2NameSpan = document.getElementById('player2NameSpan');
+        return {
+            player1: player1NameSpan?.textContent?.trim() || 'Player 1',
+            player2: player2NameSpan?.textContent?.trim() || 'Player 2'
+        };
+    }
+
+    /**
+     * Generate match statistics export object
+     */
+    private generateMatchStatistics(): MatchStatisticsExport {
+        const state = this.match.getState();
+        const config = this.match.getConfig();
+        const players = this.getPlayerNames();
+
+        const matchWinner = state.matchWinner
+            ? (state.matchWinner === 1 ? players.player1 : players.player2)
+            : null;
+
+        return {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            $id: 'match-statistics-schema.json',
+            generatedAt: new Date().toISOString(),
+            matchDetails: {
+                setsToWin: config.setsToWin,
+                gamesPerSet: config.gamesPerSet,
+                tieBreakPoints: config.tieBreakPoints
+            },
+            players: players,
+            finalScore: {
+                player1Sets: state.player1.sets,
+                player2Sets: state.player2.sets,
+                setScores: state.pastSetScores.map(set => ({
+                    player1: set.player1,
+                    player2: set.player2
+                })),
+                matchWinner: matchWinner
+            },
+            statistics: {
+                player1: state.player1Stats,
+                player2: state.player2Stats
+            }
+        };
+    }
+
+    /**
+     * Generate match score (point history) export object
+     */
+    private generateMatchScore(): MatchScoreExport {
+        const state = this.match.getState();
+        const config = this.match.getConfig();
+        const players = this.getPlayerNames();
+
+        const matchWinner = state.matchWinner
+            ? (state.matchWinner === 1 ? players.player1 : players.player2)
+            : null;
+
+        return {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            $id: 'match-score-schema.json',
+            generatedAt: new Date().toISOString(),
+            matchDetails: {
+                setsToWin: config.setsToWin,
+                gamesPerSet: config.gamesPerSet,
+                tieBreakPoints: config.tieBreakPoints
+            },
+            players: players,
+            finalScore: {
+                player1Sets: state.player1.sets,
+                player2Sets: state.player2.sets,
+                setScores: state.pastSetScores.map(set => ({
+                    player1: set.player1,
+                    player2: set.player2
+                })),
+                matchWinner: matchWinner
+            },
+            pointsHistory: state.pointsHistory
+        };
     }
 }
