@@ -28,10 +28,6 @@ The rally length should not be displayed in the stats panel.
 When a player scores and Ace, depending on the type of serve (first or second), the opponent's serve return missed statistics should increase. So if player1 scores an Ace on a first serve, player2's missed first serve return statistic should be increased by one.
 If player1 scores an Ace on a second serve, player2's missed second serve return statistic should be increased by one.
 
-## Fix player score switching
-When scoring a point for a player, the keyboard shortcuts to assign a point to a player should be disabled.
-Instead, pressing escape should close the score input panel and not assign a point.
-
 ## Add a test suite
 The project should support Behavior Driven tests though the user of the Cucumber framework.
 The feature files should be grouped by domain, such that there should be a set of tests for the scoring logic, and one for the statistics. UI testing should not be part of the Behavior driven tests.

@@ -119,6 +119,12 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
         return;
     }
 
+    // Ignore scoring shortcuts when stat input modal is open
+    const statModal = document.getElementById('statInputModal');
+    if (statModal && statModal.style.display === 'block') {
+        return;
+    }
+
     switch (event.key) {
         case '1':
             // Add point to player 1
