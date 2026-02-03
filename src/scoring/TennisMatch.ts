@@ -260,6 +260,12 @@ export class TennisMatch {
         // Track aces
         if (metadata.pointType === 'ace') {
             serverStats.aces++;
+            // Aces also count as missed returns for the returner
+            if (metadata.serveResult === 'first') {
+                loserStats.firstServeMissedReturns++;
+            } else if (metadata.serveResult === 'second') {
+                loserStats.secondServeMissedReturns++;
+            }
         }
 
         // Track point type statistics
@@ -355,6 +361,12 @@ export class TennisMatch {
         // Reverse aces
         if (metadata.pointType === 'ace') {
             serverStats.aces = Math.max(0, serverStats.aces - 1);
+            // Also reverse the missed return for the returner
+            if (metadata.serveResult === 'first') {
+                loserStats.firstServeMissedReturns = Math.max(0, loserStats.firstServeMissedReturns - 1);
+            } else if (metadata.serveResult === 'second') {
+                loserStats.secondServeMissedReturns = Math.max(0, loserStats.secondServeMissedReturns - 1);
+            }
         }
 
         // Reverse point type statistics

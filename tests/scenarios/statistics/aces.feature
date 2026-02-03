@@ -26,3 +26,11 @@ Feature: Ace Statistics
     When player 1 wins a game with aces
     Then player 1 should have 4 aces
     And player 1 should have 1 games
+
+  Scenario: Aces count as missed returns for the opponent
+    When player 1 scores a point on first serve as an ace
+    Then player 2 should have 1 first serve missed returns
+    And player 2 should have 0 second serve missed returns
+    When player 1 scores a point on second serve as an ace
+    Then player 2 should have 1 first serve missed returns
+    And player 2 should have 1 second serve missed returns

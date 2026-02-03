@@ -128,3 +128,23 @@ Then('player {int} should have {int} points won on second serve', function (
     const playerStats = player === 1 ? stats.player1 : stats.player2;
     expect(playerStats.pointsWonOnSecondServe).to.equal(points);
 });
+
+Then('player {int} should have {int} first serve missed returns', function (
+    this: TennisWorld,
+    player: number,
+    missedReturns: number
+) {
+    const stats = this.getStatistics();
+    const playerStats = player === 1 ? stats.player1 : stats.player2;
+    expect(playerStats.firstServeMissedReturns).to.equal(missedReturns);
+});
+
+Then('player {int} should have {int} second serve missed returns', function (
+    this: TennisWorld,
+    player: number,
+    missedReturns: number
+) {
+    const stats = this.getStatistics();
+    const playerStats = player === 1 ? stats.player1 : stats.player2;
+    expect(playerStats.secondServeMissedReturns).to.equal(missedReturns);
+});
