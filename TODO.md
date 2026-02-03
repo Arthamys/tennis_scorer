@@ -1,13 +1,3 @@
-## Break point statistics
-The following statistics can be computed from the point metadata without user input.
-- Break points
-- Break point conversion rate
-
-A Break point is a point where the returner (the player that is not currently serving) can score a game. This happens when the returner has a score of 40 and the server has a score bellow 40, or when the returner has an Advantage point. During a tie break, break points are not tracked.
-
-The Break point conversion rate is the result of tracking the number of times a player has won the game where his opponent was serving and dividing it by the total number of break points the player had.
-
-
 ## Rally length in point history
 - Rally length (optional)
 The rally length is optional, it should be included in the metadata for a point and saved as a number. The statistics input panel should include an text input box where the number of shots played during the point can be typed in.
