@@ -22,8 +22,8 @@ export interface MatchConfig {
 export interface PointMetadata {
     winner: 1 | 2; // Which player won the point
     server: 1 | 2; // Who was serving
-    serveResult?: 'first' | 'second'; // Which serve landed (undefined if not tracked or double fault)
-    pointType?: 'ace' | 'double_fault' | 'winner' | 'unforced_error' | 'forced_error' | 'net' | 'regular' | 'missed_return'; // How the point ended
+    serveResult: 'first' | 'second'; // Which serve landed (required)
+    pointType: 'ace' | 'double_fault' | 'winner' | 'unforced_error' | 'forced_error' | 'net' | 'missed_return'; // How the point ended (required)
 }
 
 /// Statistics tracked for each player during the match.

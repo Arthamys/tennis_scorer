@@ -51,9 +51,9 @@ export class ScoreKeeper {
     }
 
     /**
-     * Score a point with detailed statistics (for testing/advanced use)
+     * Score a point with detailed statistics
      */
-    public scorePointWithStats(player: 1 | 2, metadata: PointMetadata): void {
+    public scorePointWithStats(player: 1 | 2, metadata: Omit<PointMetadata, 'winner' | 'server'>): void {
         this.match.scorePointWithStats(player, metadata);
         this.updateDisplay();
     }

@@ -85,18 +85,9 @@ export class TennisMatch {
     }
 
     /**
-     * Score a point for the specified player (simple mode)
-     * This is a convenience wrapper around scorePointWithStats for backward compatibility
-     */
-    public scorePoint(player: 1 | 2): void {
-        // Call the enhanced method with minimal metadata
-        this.scorePointWithStats(player, {});
-    }
-
-    /**
      * Score a point with detailed statistics tracking
      */
-    public scorePointWithStats(player: 1 | 2, metadata: Partial<Omit<PointMetadata, 'winner' | 'server'>>): void {
+    public scorePointWithStats(player: 1 | 2, metadata: Omit<PointMetadata, 'winner' | 'server'>): void {
         const currentPlayer = player === 1 ? this.state.player1 : this.state.player2;
 
         currentPlayer.points++;

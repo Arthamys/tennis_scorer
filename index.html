@@ -483,6 +483,12 @@
             box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
         }
 
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
         @media (max-width: 640px) {
             .tennis-app {
                 padding: 24px;
@@ -674,16 +680,6 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                    <input type="checkbox" id="detailedStatsMode" style="width: 20px; height: 20px; cursor: pointer;">
-                    <span>Enable Detailed Statistics Mode</span>
-                </label>
-                <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 8px; margin-left: 32px;">
-                    Track serves, winners, and errors for each point
-                </p>
-            </div>
-
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
                 <button class="btn" onclick="saveSettings()">Save</button>
@@ -739,9 +735,6 @@
                     <button class="btn btn-secondary stat-btn" data-stat="type" data-value="missed_return" onclick="selectStatButton(this)">
                         Missed Return <span style="opacity: 0.7; font-size: 0.85rem;">(R)</span>
                     </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="regular" onclick="selectStatButton(this)">
-                        Regular
-                    </button>
                 </div>
             </div>
 
@@ -768,10 +761,6 @@
                 document.getElementById('theme').value = config.theme;
             }
 
-            // Load detailed stats mode setting
-            const detailedMode = localStorage.getItem('detailedStatsMode') === 'true';
-            document.getElementById('detailedStatsMode').checked = detailedMode;
-
             document.getElementById('settingsModal').style.display = 'block';
         }
 
@@ -783,7 +772,6 @@
             const gamesPerSet = parseInt(document.getElementById('gamesPerSet').value);
             const setsToWin = parseInt(document.getElementById('setsToWin').value);
             const theme = document.getElementById('theme').value;
-            const detailedStatsMode = document.getElementById('detailedStatsMode').checked;
 
             if (typeof scorer !== 'undefined') {
                 scorer.updateConfig({
@@ -792,9 +780,6 @@
                     theme: theme
                 });
             }
-
-            // Save detailed stats mode setting
-            localStorage.setItem('detailedStatsMode', detailedStatsMode.toString());
 
             closeSettingsModal();
         }
@@ -896,27 +881,54 @@
         function confirmStatInput() {
             if (!currentStatPlayer) return;
 
+            // For double fault, serve result is not needed
+            const isDoubleFault = selectedType === 'double_fault';
+
+            // Validate serve result is selected (unless double fault)
+            if (!isDoubleFault && !selectedServe) {
+                // Add error feedback to serve buttons
+                const serveGroup = document.querySelector('.form-group:has([data-stat="serve"])');
+                if (serveGroup) {
+                    serveGroup.style.animation = 'shake 0.5s ease-in-out';
+                    serveGroup.style.border = '2px solid #ef4444';
+                    serveGroup.style.borderRadius = '8px';
+                    serveGroup.style.padding = '8px';
+                    setTimeout(() => {
+                        serveGroup.style.animation = '';
+                        serveGroup.style.border = '';
+                        serveGroup.style.padding = '';
+                    }, 2000);
+                }
+                return;
+            }
+
+            // Validate point type is selected
+            if (!selectedType) {
+                // Add error feedback to point type buttons
+                const typeGroup = document.querySelector('.form-group:has([data-stat="type"])');
+                if (typeGroup) {
+                    typeGroup.style.animation = 'shake 0.5s ease-in-out';
+                    typeGroup.style.border = '2px solid #ef4444';
+                    typeGroup.style.borderRadius = '8px';
+                    typeGroup.style.padding = '8px';
+                    setTimeout(() => {
+                        typeGroup.style.animation = '';
+                        typeGroup.style.border = '';
+                        typeGroup.style.padding = '';
+                    }, 2000);
+                }
+                return;
+            }
+
             // Build metadata object
-            const metadata = {};
+            const metadata = {
+                serveResult: selectedServe,
+                pointType: selectedType
+            };
 
-            // Add serve result if selected
-            if (selectedServe) {
-                metadata.serveResult = selectedServe; // 'first' or 'second'
-            }
-
-            // Add point type if selected
-            if (selectedType) {
-                metadata.pointType = selectedType;
-            }
-
-            // Default to first serve for missed returns if no serve result selected
-            if (metadata.pointType === 'missed_return' && !metadata.serveResult) {
-                metadata.serveResult = 'first';
-            }
-
-            // Default to first serve for aces if no serve result selected
-            if (metadata.pointType === 'ace' && !metadata.serveResult) {
-                metadata.serveResult = 'first';
+            // For double fault, default serve result to 'second' (the fault was on second serve)
+            if (isDoubleFault) {
+                metadata.serveResult = 'second';
             }
 
             // Score the point with stats
