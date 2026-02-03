@@ -746,9 +746,6 @@
             </div>
 
             <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="skipStatInput()">
-                    Skip <span style="opacity: 0.7; font-size: 0.85rem;">(Esc)</span>
-                </button>
                 <button class="btn" onclick="confirmStatInput()">
                     Confirm <span style="opacity: 0.7; font-size: 0.85rem;">(Enter)</span>
                 </button>
@@ -930,17 +927,6 @@
             closeStatInputModal();
         }
 
-        function skipStatInput() {
-            if (!currentStatPlayer) return;
-
-            // Score without detailed stats
-            if (typeof scorer !== 'undefined') {
-                scorer.scorePoint(currentStatPlayer);
-            }
-
-            closeStatInputModal();
-        }
-
         // Keyboard shortcuts for stat input modal
         document.addEventListener('keydown', function(event) {
             const modal = document.getElementById('statInputModal');
@@ -991,7 +977,7 @@
                     event.preventDefault();
                     break;
                 case 'escape':
-                    skipStatInput();
+                    closeStatInputModal();
                     event.preventDefault();
                     break;
             }
