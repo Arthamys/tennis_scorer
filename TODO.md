@@ -60,3 +60,11 @@ example feature files would be:
 Each of the feature file is a cucumber/gherkin feature file that expresses test scenarios in english.
 There should be a runner to test the project against these feature files.
 Steps to interpret the feature files should live under `tests/runner` folder.
+
+## Add a progress bar to the screen when exporting scorecards.
+While the scorecards are begin generated, there should be a progress bar that indicates how far along the process is during the point replay.
+The progress bar should be at the top of the screen so that it is clearly visible.
+There must be a label above the progress bar to indicate that the scorecards are being generated.
+
+## Move the match winner "pop-up" to the top of the screen
+When the match ends, the "pop-up" card to indicate that there is a winner should be moved to the top of the screen so that it's clearly visible.
