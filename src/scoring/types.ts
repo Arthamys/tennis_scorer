@@ -24,6 +24,7 @@ export interface PointMetadata {
     server: 1 | 2; // Who was serving
     serveResult: 'first' | 'second'; // Which serve landed (required)
     pointType: 'ace' | 'double_fault' | 'winner' | 'unforced_error' | 'forced_error' | 'net' | 'missed_return'; // How the point ended (required)
+    wasBreakPoint?: boolean; // Automatically set: whether this point was a break point opportunity for the returner
 }
 
 /// Statistics tracked for each player during the match.
@@ -55,6 +56,10 @@ export interface PlayerStatistics {
     // Missed returns
     firstServeMissedReturns: number; // Returns missed on first serve
     secondServeMissedReturns: number; // Returns missed on second serve
+
+    // Break points (as returner)
+    breakPointsWon: number; // Break points converted (won the point)
+    breakPointsTotal: number; // Total break point opportunities faced
 }
 
 /// Helper functions to calculate percentages from statistics
@@ -89,6 +94,8 @@ export function createEmptyStatistics(): PlayerStatistics {
         pointsWonOnSecondServeReturn: 0,
         firstServeMissedReturns: 0,
         secondServeMissedReturns: 0,
+        breakPointsWon: 0,
+        breakPointsTotal: 0,
     };
 }
 

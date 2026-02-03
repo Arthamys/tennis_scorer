@@ -243,6 +243,7 @@ export class TennisDisplayRenderer {
         this.updateStatElement('stat-netPoints-1', p1Stats.pointsWonAtNet.toString());
         this.updateStatElement('stat-firstServeMissedReturns-1', p1Stats.firstServeMissedReturns.toString());
         this.updateStatElement('stat-secondServeMissedReturns-1', p1Stats.secondServeMissedReturns.toString());
+        this.updateStatElement('stat-breakPoints-1', this.formatBreakPoints(p1Stats.breakPointsWon, p1Stats.breakPointsTotal));
 
         // Update Player 2 statistics
         const p2Stats = state.player2Stats;
@@ -261,6 +262,18 @@ export class TennisDisplayRenderer {
         this.updateStatElement('stat-netPoints-2', p2Stats.pointsWonAtNet.toString());
         this.updateStatElement('stat-firstServeMissedReturns-2', p2Stats.firstServeMissedReturns.toString());
         this.updateStatElement('stat-secondServeMissedReturns-2', p2Stats.secondServeMissedReturns.toString());
+        this.updateStatElement('stat-breakPoints-2', this.formatBreakPoints(p2Stats.breakPointsWon, p2Stats.breakPointsTotal));
+    }
+
+    /**
+     * Format break points as "X% (won/total)"
+     */
+    private formatBreakPoints(won: number, total: number): string {
+        if (total === 0) {
+            return '0% (0/0)';
+        }
+        const percentage = Math.round((won / total) * 100);
+        return `${percentage}% (${won}/${total})`;
     }
 
     /**

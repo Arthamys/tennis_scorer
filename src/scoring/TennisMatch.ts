@@ -90,12 +90,16 @@ export class TennisMatch {
     public scorePointWithStats(player: 1 | 2, metadata: Omit<PointMetadata, 'winner' | 'server'>): void {
         const currentPlayer = player === 1 ? this.state.player1 : this.state.player2;
 
+        // Check for break point BEFORE incrementing points
+        const breakPointInfo = this.checkBreakPointBefore();
+
         currentPlayer.points++;
 
         // Create full point metadata
         const fullMetadata: PointMetadata = {
             winner: player,
             server: this.state.server,
+            wasBreakPoint: breakPointInfo.isBreakPoint,
             ...metadata
         };
 
@@ -295,6 +299,18 @@ export class TennisMatch {
                 loserStats.secondServeReturns++;
             }
         }
+
+        // Track break points (for the returner)
+        if (metadata.wasBreakPoint) {
+            const returner: 1 | 2 = server === 1 ? 2 : 1;
+            const returnerStats = returner === 1 ? this.state.player1Stats : this.state.player2Stats;
+            returnerStats.breakPointsTotal++;
+
+            // If the returner won this break point, they converted it
+            if (winner === returner) {
+                returnerStats.breakPointsWon++;
+            }
+        }
     }
 
     /**
@@ -377,6 +393,18 @@ export class TennisMatch {
                 loserStats.secondServeReturns = Math.max(0, loserStats.secondServeReturns - 1);
             }
         }
+
+        // Reverse break point statistics
+        if (metadata.wasBreakPoint) {
+            const returner: 1 | 2 = server === 1 ? 2 : 1;
+            const returnerStats = returner === 1 ? this.state.player1Stats : this.state.player2Stats;
+            returnerStats.breakPointsTotal = Math.max(0, returnerStats.breakPointsTotal - 1);
+
+            // If the returner won this break point, reverse the conversion
+            if (winner === returner) {
+                returnerStats.breakPointsWon = Math.max(0, returnerStats.breakPointsWon - 1);
+            }
+        }
     }
 
     /**
@@ -443,5 +471,33 @@ export class TennisMatch {
      */
     private switchServer(): void {
         this.state.server = this.state.server === 1 ? 2 : 1;
+    }
+
+    /**
+     * Check if the current state (before a point is scored) is a break point situation.
+     * A break point is when the returner can win the game on this point.
+     * Break points don't exist during tie-breaks.
+     *
+     * @returns Object with isBreakPoint flag and which player has the break point opportunity
+     */
+    private checkBreakPointBefore(): { isBreakPoint: boolean; returner: 1 | 2 } {
+        const server = this.state.server;
+        const returner: 1 | 2 = server === 1 ? 2 : 1;
+
+        // No break points during tie-breaks
+        if (this.state.isTieBreak) {
+            return { isBreakPoint: false, returner };
+        }
+
+        const serverScore = server === 1 ? this.state.player1.points : this.state.player2.points;
+        const returnerScore = returner === 1 ? this.state.player1.points : this.state.player2.points;
+
+        // Break point conditions:
+        // 1. Returner has 40 (3+ points) and server has less than 40 (< 3 points)
+        // 2. Both at deuce or beyond (both >= 3) and returner has advantage (one more point)
+        const isBreakPoint = (returnerScore >= 3 && serverScore < 3) ||
+                             (returnerScore >= 3 && serverScore >= 3 && returnerScore === serverScore + 1);
+
+        return { isBreakPoint, returner };
     }
 }
