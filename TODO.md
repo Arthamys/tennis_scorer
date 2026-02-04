@@ -1,2 +1,0 @@
-## Prevent the returner from scoring an Ace / a return of serve type of point
-When scoring a point to the returner (the player that is NOT the server), the UI should not display the point types: "Ace", "Missed Return" options.
