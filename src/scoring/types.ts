@@ -25,6 +25,7 @@ export interface PointMetadata {
     serveResult: 'first' | 'second'; // Which serve landed (required)
     pointType: 'ace' | 'double_fault' | 'winner' | 'unforced_error' | 'forced_error' | 'net' | 'missed_return'; // How the point ended (required)
     wasBreakPoint?: boolean; // Automatically set: whether this point was a break point opportunity for the returner
+    rallyLength?: number; // Optional: number of shots played during the point
 }
 
 /// Statistics tracked for each player during the match.

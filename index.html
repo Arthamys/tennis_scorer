@@ -790,6 +790,13 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label class="form-label">Rally Length (optional)</label>
+                <input type="number" id="rallyLengthInput" class="form-input"
+                       min="1" placeholder="Number of shots"
+                       style="max-width: 200px;">
+            </div>
+
             <div class="modal-actions">
                 <button class="btn" onclick="confirmStatInput()">
                     Confirm <span style="opacity: 0.7; font-size: 0.85rem;">(Enter)</span>
@@ -890,10 +897,27 @@
             // Clear all selections
             document.querySelectorAll('.stat-btn').forEach(btn => btn.classList.remove('selected'));
 
+            // Clear rally length input
+            const rallyInput = document.getElementById('rallyLengthInput');
+            if (rallyInput) {
+                rallyInput.value = '';
+            }
+
             // Update modal title
             const playerNameEl = document.getElementById(`player${player}NameSpan`);
             const playerName = playerNameEl?.textContent || `Player ${player}`;
             document.getElementById('statModalPointInfo').textContent = `Point to ${playerName}`;
+
+            // Hide serve-only point types (Ace, Missed Return) if player is the returner
+            const isServer = typeof scorer !== 'undefined' && scorer.getServer() === player;
+            const aceBtn = document.querySelector('[data-value="ace"]');
+            const missedReturnBtn = document.querySelector('[data-value="missed_return"]');
+            if (aceBtn) {
+                aceBtn.style.display = isServer ? '' : 'none';
+            }
+            if (missedReturnBtn) {
+                missedReturnBtn.style.display = isServer ? '' : 'none';
+            }
 
             // Show modal
             document.getElementById('statInputModal').style.display = 'block';
@@ -923,6 +947,13 @@
                 selectedServe = value;
             } else if (statType === 'type') {
                 selectedType = value;
+
+                // Auto-populate rally length for aces and missed returns
+                const rallyInput = document.getElementById('rallyLengthInput');
+                if (rallyInput && (value === 'ace' || value === 'missed_return')) {
+                    rallyInput.value = '1';
+                }
+
                 // Auto-submit for double fault (no serve result needed)
                 if (value === 'double_fault') {
                     confirmStatInput();
@@ -981,6 +1012,13 @@
             // For double fault, default serve result to 'second' (the fault was on second serve)
             if (isDoubleFault) {
                 metadata.serveResult = 'second';
+            }
+
+            // Add rally length if provided
+            const rallyInput = document.getElementById('rallyLengthInput');
+            const rallyLengthValue = rallyInput ? parseInt(rallyInput.value) : null;
+            if (rallyLengthValue && !isNaN(rallyLengthValue) && rallyLengthValue >= 1) {
+                metadata.rallyLength = rallyLengthValue;
             }
 
             // Score the point with stats

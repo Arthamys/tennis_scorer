@@ -81,3 +81,18 @@ Then('each point in the export should have a server', function (this: TennisWorl
         expect([1, 2]).to.include(point.server);
     }
 });
+
+Then('point {int} in the export should have rally length {int}', function (
+    this: TennisWorld,
+    pointIndex: number,
+    expectedRallyLength: number
+) {
+    if (!this.lastExport) {
+        throw new Error('No export available');
+    }
+    const data = JSON.parse(this.lastExport);
+    expect(Array.isArray(data)).to.be.true;
+    expect(data.length).to.be.at.least(pointIndex);
+    expect(data[pointIndex - 1]).to.have.property('rallyLength');
+    expect(data[pointIndex - 1].rallyLength).to.equal(expectedRallyLength);
+});

@@ -66,6 +66,13 @@ export class ScoreKeeper {
     }
 
     /**
+     * Get the current server (1 or 2)
+     */
+    public getServer(): 1 | 2 {
+        return this.match.getState().server;
+    }
+
+    /**
      * Remove a point from the specified player (undo)
      */
     public removePoint(player: 1 | 2): void {

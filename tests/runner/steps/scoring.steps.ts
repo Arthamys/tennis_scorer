@@ -44,7 +44,9 @@ When('player {int} scores a point on {word} serve as a/an {word}', function (
 ) {
     const serveResult = serve as 'first' | 'second';
     const mappedPointType = pointTypeMap[pointType] || pointType as PointMetadata['pointType'];
-    this.scorePoint(player as 1 | 2, serveResult, mappedPointType);
+    // Aces and missed returns always have rally length of 1
+    const rallyLength = (mappedPointType === 'ace' || mappedPointType === 'missed_return') ? 1 : undefined;
+    this.scorePoint(player as 1 | 2, serveResult, mappedPointType, rallyLength);
 });
 
 When('player {int} scores {int} consecutive points on {word} serve as winners', function (
@@ -67,13 +69,13 @@ When('player {int} scores {int} consecutive points on {word} serve as aces', fun
 ) {
     const serveResult = serve as 'first' | 'second';
     for (let i = 0; i < count; i++) {
-        this.scorePoint(player as 1 | 2, serveResult, 'ace');
+        this.scorePoint(player as 1 | 2, serveResult, 'ace', 1);
     }
 });
 
 When('player {int} wins a game with aces', function (this: TennisWorld, player: number) {
     for (let i = 0; i < 4; i++) {
-        this.scorePoint(player as 1 | 2, 'first', 'ace');
+        this.scorePoint(player as 1 | 2, 'first', 'ace', 1);
     }
 });
 

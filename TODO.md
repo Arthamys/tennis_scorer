@@ -1,4 +1,2 @@
-## Rally length in point history
-- Rally length (optional)
-The rally length is optional, it should be included in the metadata for a point and saved as a number. The statistics input panel should include an text input box where the number of shots played during the point can be typed in.
-The rally length should not be displayed in the stats panel.
+## Prevent the returner from scoring an Ace / a return of serve type of point
+When scoring a point to the returner (the player that is NOT the server), the UI should not display the point types: "Ace", "Missed Return" options.

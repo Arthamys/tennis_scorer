@@ -16,12 +16,20 @@ export class TennisWorld extends World {
     scorePoint(
         player: 1 | 2,
         serveResult: 'first' | 'second',
-        pointType: PointMetadata['pointType']
+        pointType: PointMetadata['pointType'],
+        rallyLength?: number
     ): void {
         if (!this.match) {
             throw new Error('Match not initialized. Call createMatch() first.');
         }
-        this.match.scorePointWithStats(player, { serveResult, pointType });
+        const metadata: Omit<PointMetadata, 'winner' | 'server' | 'wasBreakPoint'> = {
+            serveResult,
+            pointType
+        };
+        if (rallyLength !== undefined) {
+            (metadata as any).rallyLength = rallyLength;
+        }
+        this.match.scorePointWithStats(player, metadata);
         this.updateCachedState();
     }
 
