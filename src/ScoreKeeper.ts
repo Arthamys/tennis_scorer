@@ -167,7 +167,7 @@ export class ScoreKeeper {
             this.scorePointWithStats(point.winner, point);
             const currentSet = state.pastSetScores.length + 1;
             const currentGame = state.player1.games + state.player2.games + 1;
-            const currentPoint = state.player1.points + state.player2.points;
+            const currentPoint = state.player1.points + state.player2.points + 1;
             const frame = (i + 1).toString().padStart(3, '0');
             const filename = `${frame}_set_${currentSet}_game_${currentGame}_point_${currentPoint}.png`;
             if (point.pointType === 'double_fault') {
