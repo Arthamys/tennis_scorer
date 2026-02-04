@@ -137,13 +137,18 @@ export class ScoreKeeper {
             statsPanel.classList.add("expanded");
         }
 
+        // Create subfolders for organization
+        const pointsFolder = zip.folder("points");
+        const statisticsFolder = zip.folder("statistics");
+
         // Start a fresh match before replaying the points
         this.resetMatch();
         const first_card = await this.generateScoreCard();
-        zip.file("000_scorecard_match_opener.png", first_card);
+        pointsFolder?.file("000_match_opener.png", first_card);
         const first_stats = await this.generateStatsCard();
-        zip.file("000_stats_match_opener.png", first_stats);
+        statisticsFolder?.file("000_match_opener.png", first_stats);
         for (let i = 0; i < pointsHistory.length; i++) {
+            const state = this.match.getState();
             // Update progress bar
             this.updateProgress(i + 1, pointsHistory.length, progressBar, progressText);
 
@@ -157,13 +162,14 @@ export class ScoreKeeper {
             const currentGame = state.player1.games + this.match.getState().player2.games + 1;
             const currentPoint = state.player1.points + this.match.getState().player2.points;
             const frame = (i + 1).toString().padStart(3, '0');
+            const filename = `${frame}_set_${currentSet}_game_${currentGame}_point_${currentPoint}.png`;
             const scorecard = await this.generateScoreCard();
-            zip.file(frame + "_set_" + currentSet + "_game_" + currentGame + "_point_" + currentPoint + ".png", scorecard);
+            pointsFolder?.file(filename, scorecard);
             const statscard = await this.generateStatsCard();
-            zip.file(frame + "_stats_set_" + currentSet + "_game_" + currentGame + "_point_" + currentPoint + ".png", statscard);
+            statisticsFolder?.file(filename, statscard);
         }
 
-        // Add JSON export files
+        // Add JSON export files to root
         const matchStatistics = this.generateMatchStatistics();
         const matchScore = this.generateMatchScore();
         zip.file('match-statistics.json', JSON.stringify(matchStatistics, null, 2));
@@ -181,7 +187,10 @@ export class ScoreKeeper {
 
         // Generate and download single ZIP file
         const zipBlob = await zip.generateAsync({ type: 'blob' });
-        saveAs(zipBlob, 'score_cards.zip');
+        let players = this.getPlayerNames();
+        let player1Safe = players.player1.replace(/\s+/g, '_').toLowerCase();
+        let player2Safe = players.player2.replace(/\s+/g, '_').toLowerCase();
+        saveAs(zipBlob, `${player1Safe}_vs_${player2Safe}.zip`);
     }
 
     /**
