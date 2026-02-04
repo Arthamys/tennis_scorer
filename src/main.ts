@@ -120,10 +120,12 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
     switch (event.key) {
         case '1':
             // Add point to player 1
+            event.preventDefault();
             scorePoint(1);
             break;
         case '2':
             // Add point to player 2
+            event.preventDefault();
             scorePoint(2);
             break;
         case '!':

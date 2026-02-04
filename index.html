@@ -921,6 +921,11 @@
 
             // Show modal
             document.getElementById('statInputModal').style.display = 'block';
+
+            // Focus on rally length input
+            if (rallyInput) {
+                rallyInput.focus();
+            }
         }
 
         function closeStatInputModal() {
