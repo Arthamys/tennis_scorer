@@ -121,6 +121,15 @@ export class ScoreKeeper {
         console.log("Points history: ", pointsHistory);
         const zip = new JSZip();
 
+        // Show progress bar
+        const progressContainer = document.getElementById("progressContainer");
+        const progressBar = document.getElementById("progressBar");
+        const progressText = document.getElementById("progressText");
+        if (progressContainer) {
+            progressContainer.style.display = "block";
+        }
+        this.updateProgress(0, pointsHistory.length, progressBar, progressText);
+
         // Expand stats panel before export and track original state
         const statsPanel = document.getElementById("statsPanel");
         const wasExpanded = statsPanel?.classList.contains("expanded") ?? false;
@@ -135,6 +144,9 @@ export class ScoreKeeper {
         const first_stats = await this.generateStatsCard();
         zip.file("000_stats_match_opener.png", first_stats);
         for (let i = 0; i < pointsHistory.length; i++) {
+            // Update progress bar
+            this.updateProgress(i + 1, pointsHistory.length, progressBar, progressText);
+
             // Small delay to ensure DOM updates
             await sleep(200);
             // Handle both old format (number) and new format (PointMetadata)
@@ -162,9 +174,32 @@ export class ScoreKeeper {
             statsPanel.classList.remove("expanded");
         }
 
+        // Hide progress bar
+        if (progressContainer) {
+            progressContainer.style.display = "none";
+        }
+
         // Generate and download single ZIP file
         const zipBlob = await zip.generateAsync({ type: 'blob' });
         saveAs(zipBlob, 'score_cards.zip');
+    }
+
+    /**
+     * Update the progress bar display
+     */
+    private updateProgress(
+        current: number,
+        total: number,
+        progressBar: HTMLElement | null,
+        progressText: HTMLElement | null
+    ): void {
+        const percentage = Math.round((current / total) * 100);
+        if (progressBar) {
+            progressBar.style.width = `${percentage}%`;
+        }
+        if (progressText) {
+            progressText.textContent = `${current} / ${total} points (${percentage}%)`;
+        }
     }
 
 
