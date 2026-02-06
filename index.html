@@ -755,10 +755,10 @@
                 <label class="form-label">Serve Result</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="first" onclick="selectStatButton(this)">
-                        1st In <span style="opacity: 0.7; font-size: 0.85rem;">(S)</span>
+                        1st In <span style="opacity: 0.7; font-size: 0.85rem;">(F)</span>
                     </button>
                     <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="second" onclick="selectStatButton(this)">
-                        2nd In <span style="opacity: 0.7; font-size: 0.85rem;">(F)</span>
+                        2nd In <span style="opacity: 0.7; font-size: 0.85rem;">(S)</span>
                     </button>
                 </div>
             </div>
@@ -1043,11 +1043,11 @@
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
 
             switch(event.key.toLowerCase()) {
-                case 's': // 1st serve in
+                case 'f': // 1st serve in
                     document.querySelector('[data-value="first"]')?.click();
                     event.preventDefault();
                     break;
-                case 'f': // 2nd serve in
+                case 's': // 2nd serve in
                     document.querySelector('[data-value="second"]')?.click();
                     event.preventDefault();
                     break;
