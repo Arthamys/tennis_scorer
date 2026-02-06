@@ -29,3 +29,15 @@ Feature: Undo Statistics Reversal
     Then player 1 should have 1 unforced errors
     When player 1 undoes the last point
     Then player 1 should have 0 unforced errors
+
+  Scenario: Undo reverses first serve missed return statistics
+    When player 1 scores a point on first serve as a missed_return
+    Then player 2 should have 1 first serve missed returns
+    When player 1 undoes the last point
+    Then player 2 should have 0 first serve missed returns
+
+  Scenario: Undo reverses second serve missed return statistics
+    When player 1 scores a point on second serve as a missed_return
+    Then player 2 should have 1 second serve missed returns
+    When player 1 undoes the last point
+    Then player 2 should have 0 second serve missed returns
