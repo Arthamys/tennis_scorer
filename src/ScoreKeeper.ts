@@ -155,7 +155,6 @@ export class ScoreKeeper {
         const first_stats = await this.generateStatsCard();
         statisticsFolder?.file("000_match_opener.png", first_stats);
         for (let i = 0; i < pointsHistory.length; i++) {
-            const state = this.match.getState();
             // Update progress bar
             this.updateProgress(i + 1, pointsHistory.length, progressBar, progressText);
 
@@ -163,14 +162,16 @@ export class ScoreKeeper {
             await sleep(150);
             // Handle both old format (number) and new format (PointMetadata)
             const point = pointsHistory[i];
+            const nextPoint = pointsHistory[i + 1];
 
             this.scorePointWithStats(point.winner, point);
+            const state = this.match.getState();
             const currentSet = state.pastSetScores.length + 1;
             const currentGame = state.player1.games + state.player2.games + 1;
             const currentPoint = state.player1.points + state.player2.points + 1;
             const frame = (i + 1).toString().padStart(3, '0');
             const filename = `${frame}_set_${currentSet}_game_${currentGame}_point_${currentPoint}.png`;
-            if (point.pointType === 'double_fault') {
+            if (nextPoint?.pointType === 'double_fault') {
                 continue; // Skip scorecard for double faults
             }
             const scorecard = await this.generateScoreCard();
