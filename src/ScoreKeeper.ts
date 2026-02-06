@@ -174,6 +174,7 @@ export class ScoreKeeper {
         pointsFolder?.file("000_match_opener.png", first_card);
         const first_stats = await this.generateStatsCard();
         statisticsFolder?.file("000_match_opener.png", first_stats);
+        let frameCount = 0;
         for (let i = 0; i < pointsHistory.length; i++) {
             // Update progress bar
             this.updateProgress(i + 1, pointsHistory.length, progressBar, progressText);
@@ -189,7 +190,7 @@ export class ScoreKeeper {
             const currentSet = state.pastSetScores.length + 1;
             const currentGame = state.player1.games + state.player2.games + 1;
             const currentPoint = state.player1.points + state.player2.points;
-            const frame = (i + 1).toString().padStart(3, '0');
+            const frame = (frameCount + 1).toString().padStart(3, '0');
             const filename = `${frame}_set_${currentSet}_game_${currentGame}_point_${currentPoint}.png`;
             if (nextPoint?.pointType === 'double_fault') {
                 continue; // Skip scorecard for double faults
@@ -198,6 +199,7 @@ export class ScoreKeeper {
             pointsFolder?.file(filename, scorecard);
             const statscard = await this.generateStatsCard();
             statisticsFolder?.file(filename, statscard);
+            frameCount++;
         }
 
         // Add JSON export files to root
