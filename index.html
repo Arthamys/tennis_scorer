@@ -332,6 +332,11 @@
             color: white;
         }
 
+        .modal-content.drag-over {
+            border: 2px dashed rgba(74, 222, 128, 0.8);
+            background: rgba(74, 222, 128, 0.1);
+        }
+
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -732,6 +737,15 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label class="form-label">Import Match:</label>
+                <button class="btn btn-secondary" onclick="triggerImportFile()" style="width: 100%;">
+                    Import match score
+                </button>
+                <input type="file" id="importFileInput" accept=".json" style="display: none;"
+                       onchange="handleImportFileSelect(event)">
+            </div>
+
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
                 <button class="btn" onclick="saveSettings()">Save</button>
@@ -842,6 +856,151 @@
 
             closeSettingsModal();
         }
+
+        // Import match score functions
+        function triggerImportFile() {
+            document.getElementById('importFileInput').click();
+        }
+
+        function handleImportFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processImportFile(file);
+            }
+            // Reset the input so the same file can be selected again
+            event.target.value = '';
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.classList.remove('drag-over');
+
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type === 'application/json' || file.name.endsWith('.json')) {
+                    processImportFile(file);
+                } else {
+                    alert('Please drop a JSON file.');
+                }
+            }
+        }
+
+        function processImportFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (validateMatchScoreExport(data)) {
+                        performMatchImport(data);
+                    }
+                } catch (error) {
+                    alert('Error reading file: ' + error.message);
+                }
+            };
+            reader.onerror = function() {
+                alert('Error reading file.');
+            };
+            reader.readAsText(file);
+        }
+
+        function validateMatchScoreExport(data) {
+            // Check matchDetails
+            if (!data.matchDetails ||
+                typeof data.matchDetails.gamesPerSet !== 'number' ||
+                typeof data.matchDetails.setsToWin !== 'number' ||
+                typeof data.matchDetails.tieBreakPoints !== 'number') {
+                alert('Invalid file: missing or invalid matchDetails.');
+                return false;
+            }
+
+            // Check players
+            if (!data.players ||
+                typeof data.players.player1 !== 'string' ||
+                typeof data.players.player2 !== 'string') {
+                alert('Invalid file: missing or invalid players.');
+                return false;
+            }
+
+            // Check pointsHistory
+            if (!Array.isArray(data.pointsHistory)) {
+                alert('Invalid file: missing or invalid pointsHistory.');
+                return false;
+            }
+
+            // Validate each point has required fields
+            for (let i = 0; i < data.pointsHistory.length; i++) {
+                const point = data.pointsHistory[i];
+                if (!point ||
+                    (point.winner !== 1 && point.winner !== 2) ||
+                    (point.server !== 1 && point.server !== 2) ||
+                    typeof point.serveResult !== 'string' ||
+                    typeof point.pointType !== 'string') {
+                    alert(`Invalid file: point ${i + 1} is missing required fields (winner, server, serveResult, pointType).`);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function performMatchImport(data) {
+            if (typeof scorer === 'undefined') {
+                alert('Scorer not initialized.');
+                return;
+            }
+
+            // Import the match
+            scorer.importMatch(data);
+
+            // Update player names in the DOM
+            const player1 = data.players.player1;
+            const player2 = data.players.player2;
+
+            // Scoreboard names
+            const player1NameSpan = document.getElementById('player1NameSpan');
+            const player2NameSpan = document.getElementById('player2NameSpan');
+            if (player1NameSpan) player1NameSpan.textContent = player1;
+            if (player2NameSpan) player2NameSpan.textContent = player2;
+
+            // Control button labels
+            const player1Control = document.getElementById('player1Control');
+            const player2Control = document.getElementById('player2Control');
+            if (player1Control) player1Control.textContent = player1;
+            if (player2Control) player2Control.textContent = player2;
+
+            // Stats table headers
+            const statsPlayer1Header = document.getElementById('statsPlayer1Header');
+            const statsPlayer2Header = document.getElementById('statsPlayer2Header');
+            if (statsPlayer1Header) statsPlayer1Header.textContent = player1;
+            if (statsPlayer2Header) statsPlayer2Header.textContent = player2;
+
+            closeSettingsModal();
+            alert('Match imported successfully!');
+        }
+
+        // Set up drag-and-drop on settings modal
+        window.addEventListener('DOMContentLoaded', function() {
+            const modalContent = document.querySelector('#settingsModal .modal-content');
+            if (modalContent) {
+                modalContent.addEventListener('dragover', handleDragOver);
+                modalContent.addEventListener('dragleave', handleDragLeave);
+                modalContent.addEventListener('drop', handleDrop);
+            }
+        });
 
         // Close modal when clicking outside of it
         window.onclick = function (event) {

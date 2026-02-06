@@ -227,13 +227,51 @@
             padding: 20px;
             background: linear-gradient(45deg, #fbbf24, #f59e0b);
             border-radius: 16px;
-            margin-top: 20px;
+            top: 20px;
             font-size: 1.2rem;
             font-weight: 600;
             animation: pulse 2s infinite;
             position: absolute;
             width: calc(100% - 80px);
             z-index: 10;
+        }
+
+        .progress-container {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-label {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .progress-bar-wrapper {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(45deg, #4ade80, #22c55e);
+            border-radius: 8px;
+            transition: width 0.2s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0.9;
         }
 
         @keyframes pulse {
@@ -292,6 +330,11 @@
             max-width: 500px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
+        }
+
+        .modal-content.drag-over {
+            border: 2px dashed rgba(74, 222, 128, 0.8);
+            background: rgba(74, 222, 128, 0.1);
         }
 
         .modal-header {
@@ -514,12 +557,21 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/index-C5iqpFf3.js"></script>
+  <script type="module" crossorigin src="/assets/index-DE8PKojM.js"></script>
 </head>
 
 <body>
     <div class="tennis-app">
         <button class="settings-btn" onclick="openSettingsModal()">⚙️</button>
+
+        <!-- Progress Bar for Scorecard Generation -->
+        <div id="progressContainer" class="progress-container" style="display: none;">
+            <div class="progress-label">Generating scorecards...</div>
+            <div class="progress-bar-wrapper">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div id="progressText" class="progress-text">0%</div>
+        </div>
 
         <div class="header">
             <h1 class="title">Tennis Scorer</h1>
@@ -686,6 +738,15 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label class="form-label">Import Match:</label>
+                <button class="btn btn-secondary" onclick="triggerImportFile()" style="width: 100%;">
+                    Import match score
+                </button>
+                <input type="file" id="importFileInput" accept=".json" style="display: none;"
+                       onchange="handleImportFileSelect(event)">
+            </div>
+
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
                 <button class="btn" onclick="saveSettings()">Save</button>
@@ -709,10 +770,10 @@
                 <label class="form-label">Serve Result</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="first" onclick="selectStatButton(this)">
-                        1st In <span style="opacity: 0.7; font-size: 0.85rem;">(S)</span>
+                        1st In <span style="opacity: 0.7; font-size: 0.85rem;">(F)</span>
                     </button>
                     <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="second" onclick="selectStatButton(this)">
-                        2nd In <span style="opacity: 0.7; font-size: 0.85rem;">(F)</span>
+                        2nd In <span style="opacity: 0.7; font-size: 0.85rem;">(S)</span>
                     </button>
                 </div>
             </div>
@@ -742,6 +803,13 @@
                         Missed Return <span style="opacity: 0.7; font-size: 0.85rem;">(R)</span>
                     </button>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Rally Length (optional)</label>
+                <input type="number" id="rallyLengthInput" class="form-input"
+                       min="1" placeholder="Number of shots"
+                       style="max-width: 200px;">
             </div>
 
             <div class="modal-actions">
@@ -788,6 +856,151 @@
 
             closeSettingsModal();
         }
+
+        // Import match score functions
+        function triggerImportFile() {
+            document.getElementById('importFileInput').click();
+        }
+
+        function handleImportFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processImportFile(file);
+            }
+            // Reset the input so the same file can be selected again
+            event.target.value = '';
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.classList.remove('drag-over');
+
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type === 'application/json' || file.name.endsWith('.json')) {
+                    processImportFile(file);
+                } else {
+                    alert('Please drop a JSON file.');
+                }
+            }
+        }
+
+        function processImportFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (validateMatchScoreExport(data)) {
+                        performMatchImport(data);
+                    }
+                } catch (error) {
+                    alert('Error reading file: ' + error.message);
+                }
+            };
+            reader.onerror = function() {
+                alert('Error reading file.');
+            };
+            reader.readAsText(file);
+        }
+
+        function validateMatchScoreExport(data) {
+            // Check matchDetails
+            if (!data.matchDetails ||
+                typeof data.matchDetails.gamesPerSet !== 'number' ||
+                typeof data.matchDetails.setsToWin !== 'number' ||
+                typeof data.matchDetails.tieBreakPoints !== 'number') {
+                alert('Invalid file: missing or invalid matchDetails.');
+                return false;
+            }
+
+            // Check players
+            if (!data.players ||
+                typeof data.players.player1 !== 'string' ||
+                typeof data.players.player2 !== 'string') {
+                alert('Invalid file: missing or invalid players.');
+                return false;
+            }
+
+            // Check pointsHistory
+            if (!Array.isArray(data.pointsHistory)) {
+                alert('Invalid file: missing or invalid pointsHistory.');
+                return false;
+            }
+
+            // Validate each point has required fields
+            for (let i = 0; i < data.pointsHistory.length; i++) {
+                const point = data.pointsHistory[i];
+                if (!point ||
+                    (point.winner !== 1 && point.winner !== 2) ||
+                    (point.server !== 1 && point.server !== 2) ||
+                    typeof point.serveResult !== 'string' ||
+                    typeof point.pointType !== 'string') {
+                    alert(`Invalid file: point ${i + 1} is missing required fields (winner, server, serveResult, pointType).`);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function performMatchImport(data) {
+            if (typeof scorer === 'undefined') {
+                alert('Scorer not initialized.');
+                return;
+            }
+
+            // Import the match
+            scorer.importMatch(data);
+
+            // Update player names in the DOM
+            const player1 = data.players.player1;
+            const player2 = data.players.player2;
+
+            // Scoreboard names
+            const player1NameSpan = document.getElementById('player1NameSpan');
+            const player2NameSpan = document.getElementById('player2NameSpan');
+            if (player1NameSpan) player1NameSpan.textContent = player1;
+            if (player2NameSpan) player2NameSpan.textContent = player2;
+
+            // Control button labels
+            const player1Control = document.getElementById('player1Control');
+            const player2Control = document.getElementById('player2Control');
+            if (player1Control) player1Control.textContent = player1;
+            if (player2Control) player2Control.textContent = player2;
+
+            // Stats table headers
+            const statsPlayer1Header = document.getElementById('statsPlayer1Header');
+            const statsPlayer2Header = document.getElementById('statsPlayer2Header');
+            if (statsPlayer1Header) statsPlayer1Header.textContent = player1;
+            if (statsPlayer2Header) statsPlayer2Header.textContent = player2;
+
+            closeSettingsModal();
+            alert('Match imported successfully!');
+        }
+
+        // Set up drag-and-drop on settings modal
+        window.addEventListener('DOMContentLoaded', function() {
+            const modalContent = document.querySelector('#settingsModal .modal-content');
+            if (modalContent) {
+                modalContent.addEventListener('dragover', handleDragOver);
+                modalContent.addEventListener('dragleave', handleDragLeave);
+                modalContent.addEventListener('drop', handleDrop);
+            }
+        });
 
         // Close modal when clicking outside of it
         window.onclick = function (event) {
@@ -843,13 +1056,35 @@
             // Clear all selections
             document.querySelectorAll('.stat-btn').forEach(btn => btn.classList.remove('selected'));
 
+            // Clear rally length input
+            const rallyInput = document.getElementById('rallyLengthInput');
+            if (rallyInput) {
+                rallyInput.value = '';
+            }
+
             // Update modal title
             const playerNameEl = document.getElementById(`player${player}NameSpan`);
             const playerName = playerNameEl?.textContent || `Player ${player}`;
             document.getElementById('statModalPointInfo').textContent = `Point to ${playerName}`;
 
+            // Hide serve-only point types (Ace, Missed Return) if player is the returner
+            const isServer = typeof scorer !== 'undefined' && scorer.getServer() === player;
+            const aceBtn = document.querySelector('[data-value="ace"]');
+            const missedReturnBtn = document.querySelector('[data-value="missed_return"]');
+            if (aceBtn) {
+                aceBtn.style.display = isServer ? '' : 'none';
+            }
+            if (missedReturnBtn) {
+                missedReturnBtn.style.display = isServer ? '' : 'none';
+            }
+
             // Show modal
             document.getElementById('statInputModal').style.display = 'block';
+
+            // Focus on rally length input
+            if (rallyInput) {
+                rallyInput.focus();
+            }
         }
 
         function closeStatInputModal() {
@@ -876,6 +1111,13 @@
                 selectedServe = value;
             } else if (statType === 'type') {
                 selectedType = value;
+
+                // Auto-populate rally length for aces and missed returns
+                const rallyInput = document.getElementById('rallyLengthInput');
+                if (rallyInput && (value === 'ace' || value === 'missed_return')) {
+                    rallyInput.value = '1';
+                }
+
                 // Auto-submit for double fault (no serve result needed)
                 if (value === 'double_fault') {
                     confirmStatInput();
@@ -936,6 +1178,13 @@
                 metadata.serveResult = 'second';
             }
 
+            // Add rally length if provided
+            const rallyInput = document.getElementById('rallyLengthInput');
+            const rallyLengthValue = rallyInput ? parseInt(rallyInput.value) : null;
+            if (rallyLengthValue && !isNaN(rallyLengthValue) && rallyLengthValue >= 1) {
+                metadata.rallyLength = rallyLengthValue;
+            }
+
             // Score the point with stats
             if (typeof scorer !== 'undefined') {
                 scorer.scorePointWithStats(currentStatPlayer, metadata);
@@ -953,11 +1202,11 @@
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
 
             switch(event.key.toLowerCase()) {
-                case 's': // 1st serve in
+                case 'f': // 1st serve in
                     document.querySelector('[data-value="first"]')?.click();
                     event.preventDefault();
                     break;
-                case 'f': // 2nd serve in
+                case 's': // 2nd serve in
                     document.querySelector('[data-value="second"]')?.click();
                     event.preventDefault();
                     break;

@@ -89,6 +89,26 @@ export class ScoreKeeper {
     }
 
     /**
+     * Import a previously exported match from MatchScoreExport data
+     */
+    public importMatch(matchData: MatchScoreExport): void {
+        // 1. Reset the match
+        this.resetMatch();
+
+        // 2. Update config from matchDetails
+        this.updateConfig({
+            gamesPerSet: matchData.matchDetails.gamesPerSet,
+            setsToWin: matchData.matchDetails.setsToWin,
+            tieBreakPoints: matchData.matchDetails.tieBreakPoints
+        });
+
+        // 3. Replay all points from history
+        for (const point of matchData.pointsHistory) {
+            this.scorePointWithStats(point.winner, point);
+        }
+    }
+
+    /**
      * Update match settings from DOM elements
      */
     public updateMatchSettings(): void {
@@ -168,7 +188,7 @@ export class ScoreKeeper {
             const state = this.match.getState();
             const currentSet = state.pastSetScores.length + 1;
             const currentGame = state.player1.games + state.player2.games + 1;
-            const currentPoint = state.player1.points + state.player2.points + 1;
+            const currentPoint = state.player1.points + state.player2.points;
             const frame = (i + 1).toString().padStart(3, '0');
             const filename = `${frame}_set_${currentSet}_game_${currentGame}_point_${currentPoint}.png`;
             if (nextPoint?.pointType === 'double_fault') {
