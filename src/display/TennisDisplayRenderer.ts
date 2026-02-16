@@ -236,7 +236,6 @@ export class TennisDisplayRenderer {
         this.updateStatElement('stat-secondServe-1',
             `${secondServe1}% (${p1Stats.secondServesIn}/${p1Stats.secondServesTotal})`);
         this.updateStatElement('stat-aces-1', p1Stats.aces.toString());
-        this.updateStatElement('stat-doubleFaults-1', p1Stats.doubleFaults.toString());
         this.updateStatElement('stat-winners-1', p1Stats.winners.toString());
         this.updateStatElement('stat-unforcedErrors-1', p1Stats.unforcedErrors.toString());
         this.updateStatElement('stat-forcedErrors-1', p1Stats.forcedErrors.toString());
@@ -255,7 +254,6 @@ export class TennisDisplayRenderer {
         this.updateStatElement('stat-secondServe-2',
             `${secondServe2}% (${p2Stats.secondServesIn}/${p2Stats.secondServesTotal})`);
         this.updateStatElement('stat-aces-2', p2Stats.aces.toString());
-        this.updateStatElement('stat-doubleFaults-2', p2Stats.doubleFaults.toString());
         this.updateStatElement('stat-winners-2', p2Stats.winners.toString());
         this.updateStatElement('stat-unforcedErrors-2', p2Stats.unforcedErrors.toString());
         this.updateStatElement('stat-forcedErrors-2', p2Stats.forcedErrors.toString());
