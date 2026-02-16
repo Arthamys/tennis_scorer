@@ -235,6 +235,8 @@ export class TennisDisplayRenderer {
             `${firstServe1}% (${p1Stats.firstServesIn}/${p1Stats.firstServesTotal})`);
         this.updateStatElement('stat-secondServe-1',
             `${secondServe1}% (${p1Stats.secondServesIn}/${p1Stats.secondServesTotal})`);
+        this.updateStatElement('stat-pointsWonOnFirstServe-1', p1Stats.pointsWonOnFirstServe.toString());
+        this.updateStatElement('stat-pointsWonOnSecondServe-1', p1Stats.pointsWonOnSecondServe.toString());
         this.updateStatElement('stat-aces-1', p1Stats.aces.toString());
         this.updateStatElement('stat-winners-1', p1Stats.winners.toString());
         this.updateStatElement('stat-unforcedErrors-1', p1Stats.unforcedErrors.toString());
@@ -253,6 +255,8 @@ export class TennisDisplayRenderer {
             `${firstServe2}% (${p2Stats.firstServesIn}/${p2Stats.firstServesTotal})`);
         this.updateStatElement('stat-secondServe-2',
             `${secondServe2}% (${p2Stats.secondServesIn}/${p2Stats.secondServesTotal})`);
+        this.updateStatElement('stat-pointsWonOnFirstServe-2', p2Stats.pointsWonOnFirstServe.toString());
+        this.updateStatElement('stat-pointsWonOnSecondServe-2', p2Stats.pointsWonOnSecondServe.toString());
         this.updateStatElement('stat-aces-2', p2Stats.aces.toString());
         this.updateStatElement('stat-winners-2', p2Stats.winners.toString());
         this.updateStatElement('stat-unforcedErrors-2', p2Stats.unforcedErrors.toString());
