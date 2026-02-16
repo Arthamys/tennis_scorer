@@ -245,15 +245,15 @@ export class TennisMatch {
                 // A second serve implies a first serve fault occurred
                 serverStats.firstServesTotal++;
                 serverStats.secondServesTotal++;
-                serverStats.secondServesIn++;
+                if (metadata.pointType !== 'double_fault') {
+                    // Double faults means the second serve was not in.
+                    serverStats.secondServesIn++;
+                }
             }
         }
 
         // Track double faults
         if (metadata.pointType === 'double_fault') {
-            // Double fault counts both first and second serve attempts
-            serverStats.firstServesTotal++;
-            serverStats.secondServesTotal++;
             serverStats.doubleFaults++;
         }
 
@@ -351,7 +351,6 @@ export class TennisMatch {
             }
         }
 
-        // Reverse double faults
         if (metadata.pointType === 'double_fault') {
             serverStats.firstServesTotal = Math.max(0, serverStats.firstServesTotal - 1);
             serverStats.secondServesTotal = Math.max(0, serverStats.secondServesTotal - 1);
@@ -515,7 +514,7 @@ export class TennisMatch {
         // 1. Returner has 40 (3+ points) and server has less than 40 (< 3 points)
         // 2. Both at deuce or beyond (both >= 3) and returner has advantage (one more point)
         const isBreakPoint = (returnerScore >= 3 && serverScore < 3) ||
-                             (returnerScore >= 3 && serverScore >= 3 && returnerScore === serverScore + 1);
+            (returnerScore >= 3 && serverScore >= 3 && returnerScore === serverScore + 1);
 
         return { isBreakPoint, returner };
     }
