@@ -265,6 +265,17 @@ export class TennisDisplayRenderer {
         this.updateStatElement('stat-firstServeMissedReturns-2', p2Stats.firstServeMissedReturns.toString());
         this.updateStatElement('stat-secondServeMissedReturns-2', p2Stats.secondServeMissedReturns.toString());
         this.updateStatElement('stat-breakPoints-2', this.formatBreakPoints(p2Stats.breakPointsWon, p2Stats.breakPointsTotal));
+
+        // Points won percentage (derived from existing serve/return stats)
+        const p1Won = p1Stats.pointsWonOnFirstServe + p1Stats.pointsWonOnSecondServe
+            + p1Stats.pointsWonOnFirstServeReturn + p1Stats.pointsWonOnSecondServeReturn;
+        const p2Won = p2Stats.pointsWonOnFirstServe + p2Stats.pointsWonOnSecondServe
+            + p2Stats.pointsWonOnFirstServeReturn + p2Stats.pointsWonOnSecondServeReturn;
+        const totalPoints = p1Won + p2Won;
+        const p1WonPct = totalPoints === 0 ? 0 : Math.round((p1Won / totalPoints) * 100);
+        const p2WonPct = totalPoints === 0 ? 0 : Math.round((p2Won / totalPoints) * 100);
+        this.updateStatElement('stat-pointsWon-1', `${p1WonPct}% (${p1Won}/${totalPoints})`);
+        this.updateStatElement('stat-pointsWon-2', `${p2WonPct}% (${p2Won}/${totalPoints})`);
     }
 
     /**
