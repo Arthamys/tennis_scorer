@@ -87,6 +87,19 @@ Then('player {int} should have {int} first serves in out of {int} total', functi
     expect(playerStats.firstServesTotal).to.equal(total);
 });
 
+Then('player {int} should have {int} second serves in out of {int} total', function (
+    this: TennisWorld,
+    player: number,
+    servesIn: number,
+    total: number
+) {
+    const stats = this.getStatistics();
+    const playerStats = player === 1 ? stats.player1 : stats.player2;
+    expect(playerStats.secondServesIn).to.equal(servesIn);
+    expect(playerStats.secondServesTotal).to.equal(total);
+});
+
+
 Then('player {int} should have {int} points won at net', function (
     this: TennisWorld,
     player: number,
