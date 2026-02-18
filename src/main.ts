@@ -112,8 +112,6 @@ const POINT_TYPE_KEYS: Record<string, string> = {
     'u': 'unforced_error',
     'e': 'forced_error',
     'n': 'net',
-    'a': 'ace',
-    'r': 'missed_return',
 };
 
 const POINT_TYPE_LABELS: Record<string, string> = {
@@ -140,6 +138,7 @@ function updateStateDisplay(): void {
     if (serveEl) {
         serveEl.textContent = selectedServe ? `Serve: ${selectedServe === 'first' ? '1st' : '2nd'}` : 'Serve: —';
         serveEl.classList.toggle('selected', selectedServe !== null);
+        serveEl.classList.toggle('second-serve', selectedServe === 'second');
     }
     if (rallyEl) {
         rallyEl.textContent = `Rally: ${rallyCounter}`;
@@ -149,6 +148,12 @@ function updateStateDisplay(): void {
         typeEl.textContent = selectedPointType ? `Type: ${POINT_TYPE_LABELS[selectedPointType] || selectedPointType}` : 'Type: —';
         typeEl.classList.toggle('selected', selectedPointType !== null);
     }
+
+    // Update serve indicator dots next to player names
+    const serve1 = document.getElementById('serve1');
+    const serve2 = document.getElementById('serve2');
+    if (serve1) serve1.classList.toggle('second-serve', selectedServe === 'second');
+    if (serve2) serve2.classList.toggle('second-serve', selectedServe === 'second');
 }
 
 function shakeElement(id: string): void {
@@ -173,12 +178,6 @@ function confirmPoint(player: 1 | 2): void {
         shakeElement('pointTypeState');
         return;
     }
-    // Ace and missed_return only valid when point goes to server
-    if ((selectedPointType === 'ace' || selectedPointType === 'missed_return') && player !== scorer.getServer()) {
-        shakeElement('pointTypeState');
-        return;
-    }
-
     const metadata: any = {
         serveResult: selectedServe,
         pointType: selectedPointType,
@@ -188,6 +187,34 @@ function confirmPoint(player: 1 | 2): void {
     }
 
     scorer.scorePointWithStats(player, metadata);
+    clearState();
+}
+
+function handleAce(): void {
+    if (!selectedServe) {
+        shakeElement('serveState');
+        return;
+    }
+    const server = scorer.getServer();
+    scorer.scorePointWithStats(server, {
+        serveResult: selectedServe,
+        pointType: 'ace',
+        rallyLength: 1,
+    });
+    clearState();
+}
+
+function handleMissedReturn(): void {
+    if (!selectedServe) {
+        shakeElement('serveState');
+        return;
+    }
+    const server = scorer.getServer();
+    scorer.scorePointWithStats(server, {
+        serveResult: selectedServe,
+        pointType: 'missed_return',
+        rallyLength: 2,
+    });
     clearState();
 }
 
@@ -239,11 +266,17 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
         case 'u':
         case 'e':
         case 'n':
-        case 'a':
-        case 'r':
             event.preventDefault();
             selectedPointType = POINT_TYPE_KEYS[key];
             updateStateDisplay();
+            break;
+        case 'a':
+            event.preventDefault();
+            handleAce();
+            break;
+        case 'r':
+            event.preventDefault();
+            handleMissedReturn();
             break;
         case 'd':
             event.preventDefault();
