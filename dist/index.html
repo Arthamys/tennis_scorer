@@ -463,7 +463,7 @@
         }
 
         .stats-panel.expanded {
-            max-height: 600px;
+            max-height: 2000px;
         }
 
         .stats-table {
@@ -527,9 +527,26 @@
         }
 
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-5px);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(5px);
+            }
         }
 
         @media (max-width: 640px) {
@@ -557,7 +574,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/index-DE8PKojM.js"></script>
+  <script type="module" crossorigin src="/assets/index-C-OSqeeb.js"></script>
 </head>
 
 <body>
@@ -642,14 +659,19 @@
                             <td class="stat-value" id="stat-secondServe-2">0% (0/0)</td>
                         </tr>
                         <tr>
+                            <td class="stat-name">1st Serve Pts Won</td>
+                            <td class="stat-value" id="stat-pointsWonOnFirstServe-1">0</td>
+                            <td class="stat-value" id="stat-pointsWonOnFirstServe-2">0</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">2nd Serve Pts Won</td>
+                            <td class="stat-value" id="stat-pointsWonOnSecondServe-1">0</td>
+                            <td class="stat-value" id="stat-pointsWonOnSecondServe-2">0</td>
+                        </tr>
+                        <tr>
                             <td class="stat-name">Aces</td>
                             <td class="stat-value" id="stat-aces-1">0</td>
                             <td class="stat-value" id="stat-aces-2">0</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">Double Faults</td>
-                            <td class="stat-value" id="stat-doubleFaults-1">0</td>
-                            <td class="stat-value" id="stat-doubleFaults-2">0</td>
                         </tr>
                         <tr>
                             <td class="stat-name">Winners</td>
@@ -685,6 +707,11 @@
                             <td class="stat-name">Break Points</td>
                             <td class="stat-value" id="stat-breakPoints-1">0% (0/0)</td>
                             <td class="stat-value" id="stat-breakPoints-2">0% (0/0)</td>
+                        </tr>
+                        <tr>
+                            <td class="stat-name">Points Won</td>
+                            <td class="stat-value" id="stat-pointsWon-1">0%</td>
+                            <td class="stat-value" id="stat-pointsWon-2">0%</td>
                         </tr>
                     </tbody>
                 </table>
@@ -744,7 +771,7 @@
                     Import match score
                 </button>
                 <input type="file" id="importFileInput" accept=".json" style="display: none;"
-                       onchange="handleImportFileSelect(event)">
+                    onchange="handleImportFileSelect(event)">
             </div>
 
             <div class="modal-actions">
@@ -769,10 +796,12 @@
             <div class="form-group">
                 <label class="form-label">Serve Result</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="first" onclick="selectStatButton(this)">
+                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="first"
+                        onclick="selectStatButton(this)">
                         1st In <span style="opacity: 0.7; font-size: 0.85rem;">(F)</span>
                     </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="second" onclick="selectStatButton(this)">
+                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="second"
+                        onclick="selectStatButton(this)">
                         2nd In <span style="opacity: 0.7; font-size: 0.85rem;">(S)</span>
                     </button>
                 </div>
@@ -781,25 +810,32 @@
             <div class="form-group">
                 <label class="form-label">Point Type</label>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="ace" onclick="selectStatButton(this)">
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="ace"
+                        onclick="selectStatButton(this)">
                         Ace <span style="opacity: 0.7; font-size: 0.85rem;">(A)</span>
                     </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="double_fault" onclick="selectStatButton(this)">
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="double_fault"
+                        onclick="selectStatButton(this)">
                         Double Fault <span style="opacity: 0.7; font-size: 0.85rem;">(D)</span>
                     </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="winner" onclick="selectStatButton(this)">
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="winner"
+                        onclick="selectStatButton(this)">
                         Winner <span style="opacity: 0.7; font-size: 0.85rem;">(W)</span>
                     </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="unforced_error" onclick="selectStatButton(this)">
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="unforced_error"
+                        onclick="selectStatButton(this)">
                         Unforced Error <span style="opacity: 0.7; font-size: 0.85rem;">(U)</span>
                     </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="forced_error" onclick="selectStatButton(this)">
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="forced_error"
+                        onclick="selectStatButton(this)">
                         Forced Error <span style="opacity: 0.7; font-size: 0.85rem;">(E)</span>
                     </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="net" onclick="selectStatButton(this)">
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="net"
+                        onclick="selectStatButton(this)">
                         Net Point <span style="opacity: 0.7; font-size: 0.85rem;">(N)</span>
                     </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="missed_return" onclick="selectStatButton(this)">
+                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="missed_return"
+                        onclick="selectStatButton(this)">
                         Missed Return <span style="opacity: 0.7; font-size: 0.85rem;">(R)</span>
                     </button>
                 </div>
@@ -807,9 +843,8 @@
 
             <div class="form-group">
                 <label class="form-label">Rally Length (optional)</label>
-                <input type="number" id="rallyLengthInput" class="form-input"
-                       min="1" placeholder="Number of shots"
-                       style="max-width: 200px;">
+                <input type="number" id="rallyLengthInput" class="form-input" min="1" placeholder="Number of shots"
+                    style="max-width: 200px;">
             </div>
 
             <div class="modal-actions">
@@ -901,7 +936,7 @@
 
         function processImportFile(file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 try {
                     const data = JSON.parse(e.target.result);
                     if (validateMatchScoreExport(data)) {
@@ -911,7 +946,7 @@
                     alert('Error reading file: ' + error.message);
                 }
             };
-            reader.onerror = function() {
+            reader.onerror = function () {
                 alert('Error reading file.');
             };
             reader.readAsText(file);
@@ -993,7 +1028,7 @@
         }
 
         // Set up drag-and-drop on settings modal
-        window.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('DOMContentLoaded', function () {
             const modalContent = document.querySelector('#settingsModal .modal-content');
             if (modalContent) {
                 modalContent.addEventListener('dragover', handleDragOver);
@@ -1031,7 +1066,7 @@
         }
 
         // Restore stats panel state on page load
-        window.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('DOMContentLoaded', function () {
             const statsExpanded = localStorage.getItem('statsExpanded');
             const statsPanel = document.getElementById('statsPanel');
             const statsChevron = document.getElementById('statsChevron');
@@ -1056,10 +1091,10 @@
             // Clear all selections
             document.querySelectorAll('.stat-btn').forEach(btn => btn.classList.remove('selected'));
 
-            // Clear rally length input
+            // Pre-fill rally length from space bar counter, or clear
             const rallyInput = document.getElementById('rallyLengthInput');
             if (rallyInput) {
-                rallyInput.value = '';
+                rallyInput.value = window.rallyCounter > 0 ? window.rallyCounter : '';
             }
 
             // Update modal title
@@ -1092,6 +1127,7 @@
             currentStatPlayer = null;
             selectedServe = null;
             selectedType = null;
+            if (window.resetRallyCounter) window.resetRallyCounter();
         }
 
         function selectStatButton(button) {
@@ -1194,14 +1230,14 @@
         }
 
         // Keyboard shortcuts for stat input modal
-        document.addEventListener('keydown', function(event) {
+        document.addEventListener('keydown', function (event) {
             const modal = document.getElementById('statInputModal');
             if (modal.style.display !== 'block') return;
 
             // Don't interfere with input fields
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
 
-            switch(event.key.toLowerCase()) {
+            switch (event.key.toLowerCase()) {
                 case 'f': // 1st serve in
                     document.querySelector('[data-value="first"]')?.click();
                     event.preventDefault();

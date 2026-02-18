@@ -103,6 +103,14 @@ function handleNameKeydown(event: KeyboardEvent, player: 1 | 2): void {
 (window as any).handleNameKeydown = handleNameKeydown;
 (window as any).buildScoreCards = buildScoreCards;
 
+// Rally counter - incremented by Space during play, read by stat modal
+let rallyCounter = 0;
+(window as any).rallyCounter = rallyCounter;
+(window as any).resetRallyCounter = () => {
+    rallyCounter = 0;
+    (window as any).rallyCounter = 0;
+};
+
 // Keyboard shortcuts for scoring
 document.addEventListener('keydown', (event: KeyboardEvent) => {
     // Ignore keystrokes when typing in input fields
@@ -118,6 +126,11 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
     }
 
     switch (event.key) {
+        case ' ':
+            event.preventDefault();
+            rallyCounter++;
+            (window as any).rallyCounter = rallyCounter;
+            break;
         case '1':
             // Add point to player 1
             event.preventDefault();
