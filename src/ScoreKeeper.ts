@@ -170,6 +170,12 @@ export class ScoreKeeper {
 
         // Start a fresh match before replaying the points
         this.resetMatch();
+        const firstPoint = pointsHistory[0];
+        const serve1El = document.getElementById('serve1');
+        const serve2El = document.getElementById('serve2');
+        const firstIsSecond = firstPoint?.serveResult === 'second';
+        if (serve1El) serve1El.classList.toggle('second-serve', firstIsSecond);
+        if (serve2El) serve2El.classList.toggle('second-serve', firstIsSecond);
         const first_card = await this.generateScoreCard();
         pointsFolder?.file("000_match_opener.png", first_card);
         const first_stats = await this.generateStatsCard();
@@ -187,10 +193,10 @@ export class ScoreKeeper {
 
             this.scorePointWithStats(point.winner, point);
 
-            // Update serve indicator color based on serve type
+            // Update serve indicator color based on the *next* point's serve type
             const serve1El = document.getElementById('serve1');
             const serve2El = document.getElementById('serve2');
-            const isSecondServe = point.serveResult === 'second';
+            const isSecondServe = nextPoint?.serveResult === 'second';
             if (serve1El) serve1El.classList.toggle('second-serve', isSecondServe);
             if (serve2El) serve2El.classList.toggle('second-serve', isSecondServe);
 
