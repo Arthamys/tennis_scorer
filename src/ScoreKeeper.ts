@@ -186,6 +186,14 @@ export class ScoreKeeper {
             const nextPoint = pointsHistory[i + 1];
 
             this.scorePointWithStats(point.winner, point);
+
+            // Update serve indicator color based on serve type
+            const serve1El = document.getElementById('serve1');
+            const serve2El = document.getElementById('serve2');
+            const isSecondServe = point.serveResult === 'second';
+            if (serve1El) serve1El.classList.toggle('second-serve', isSecondServe);
+            if (serve2El) serve2El.classList.toggle('second-serve', isSecondServe);
+
             const state = this.match.getState();
             const currentSet = state.pastSetScores.length + 1;
             const currentGame = state.player1.games + state.player2.games + 1;

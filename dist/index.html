@@ -156,6 +156,11 @@
             opacity: 1;
         }
 
+        .serve-indicator.second-serve {
+            background: #fbbf24;
+            box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+        }
+
         .score-cell {
             text-align: center;
             font-size: 1.1rem;
@@ -576,6 +581,11 @@
             opacity: 1;
         }
 
+        .state-chip.second-serve.selected {
+            background: rgba(251, 191, 36, 0.25);
+            border-color: rgba(251, 191, 36, 0.6);
+        }
+
         .state-chip.error {
             animation: shake 0.5s ease-in-out;
             border-color: #ef4444;
@@ -637,7 +647,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/index-NuIUxUrz.js"></script>
+  <script type="module" crossorigin src="/assets/index-BvFaccQU.js"></script>
 </head>
 
 <body>
@@ -804,16 +814,6 @@
         </div>
 
         <div class="controls">
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <button class="btn btn-secondary" onclick="removePoint(1)">-</button>
-                <span id="player1Control" style="min-width: 80px; text-align: center; font-weight: 600;">Player 1</span>
-                <button class="btn" onclick="scorePoint(1)">+</button>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <button class="btn btn-secondary" onclick="removePoint(2)">-</button>
-                <span id="player2Control" style="min-width: 80px; text-align: center; font-weight: 600;">Player 2</span>
-                <button class="btn" onclick="scorePoint(2)">+</button>
-            </div>
             <button class="btn btn-secondary" onclick="resetMatch()">New Match</button>
             <button class="btn btn-secondary" onclick="buildScoreCards()">Get Scorecards</button>
         </div>
