@@ -17,6 +17,7 @@
             background: var(--bg-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -58,7 +59,7 @@
 
         .match-info {
             display: flex;
-            justify-content: flex-start;
+            justify-content: center;
             align-items: center;
             margin-bottom: 30px;
             gap: 20px;
@@ -549,6 +550,68 @@
             }
         }
 
+        /* Keyboard state display */
+        .keyboard-state-display {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .state-chip {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+
+        .state-chip.selected {
+            background: rgba(74, 222, 128, 0.25);
+            border-color: rgba(74, 222, 128, 0.6);
+            opacity: 1;
+        }
+
+        .state-chip.error {
+            animation: shake 0.5s ease-in-out;
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Keyboard shortcuts panel */
+        .shortcuts-panel {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px 16px;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.72rem;
+            opacity: 0.7;
+            line-height: 1.6;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .shortcuts-panel kbd {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 3px;
+            padding: 0px 5px;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 0.7rem;
+            min-width: 18px;
+            text-align: center;
+        }
+
         @media (max-width: 640px) {
             .tennis-app {
                 padding: 24px;
@@ -577,6 +640,21 @@
 </head>
 
 <body>
+    <div class="shortcuts-panel">
+        <span><kbd>F</kbd> 1st serve</span>
+        <span><kbd>S</kbd> 2nd serve</span>
+        <span><kbd>Space</kbd> rally+1</span>
+        <span><kbd>W</kbd> winner</span>
+        <span><kbd>U</kbd> unforced</span>
+        <span><kbd>E</kbd> forced</span>
+        <span><kbd>N</kbd> net</span>
+        <span><kbd>A</kbd> ace</span>
+        <span><kbd>R</kbd> missed return</span>
+        <span><kbd>D</kbd> double fault</span>
+        <span><kbd>1</kbd><kbd>2</kbd> point to player</span>
+        <span><kbd>Esc</kbd> clear</span>
+    </div>
+
     <div class="tennis-app">
         <button class="settings-btn" onclick="openSettingsModal()">⚙️</button>
 
@@ -628,6 +706,13 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Keyboard State Display -->
+        <div class="keyboard-state-display" id="keyboardStateDisplay">
+            <span class="state-chip" id="serveState">Serve: —</span>
+            <span class="state-chip" id="rallyState">Rally: 0</span>
+            <span class="state-chip" id="pointTypeState">Type: —</span>
         </div>
 
         <!-- Statistics Panel -->
@@ -1229,61 +1314,6 @@
             closeStatInputModal();
         }
 
-        // Keyboard shortcuts for stat input modal
-        document.addEventListener('keydown', function (event) {
-            const modal = document.getElementById('statInputModal');
-            if (modal.style.display !== 'block') return;
-
-            // Don't interfere with input fields
-            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
-
-            switch (event.key.toLowerCase()) {
-                case 'f': // 1st serve in
-                    document.querySelector('[data-value="first"]')?.click();
-                    event.preventDefault();
-                    break;
-                case 's': // 2nd serve in
-                    document.querySelector('[data-value="second"]')?.click();
-                    event.preventDefault();
-                    break;
-                case 'a': // Ace
-                    document.querySelector('[data-value="ace"]')?.click();
-                    event.preventDefault();
-                    break;
-                case 'd': // Double fault
-                    document.querySelector('[data-value="double_fault"]')?.click();
-                    event.preventDefault();
-                    break;
-                case 'w': // Winner
-                    document.querySelector('[data-value="winner"]')?.click();
-                    event.preventDefault();
-                    break;
-                case 'u': // Unforced error
-                    document.querySelector('[data-value="unforced_error"]')?.click();
-                    event.preventDefault();
-                    break;
-                case 'e': // Forced error
-                    document.querySelector('[data-value="forced_error"]')?.click();
-                    event.preventDefault();
-                    break;
-                case 'n': // Net point
-                    document.querySelector('[data-value="net"]')?.click();
-                    event.preventDefault();
-                    break;
-                case 'r': // Missed return
-                    document.querySelector('[data-value="missed_return"]')?.click();
-                    event.preventDefault();
-                    break;
-                case 'enter':
-                    confirmStatInput();
-                    event.preventDefault();
-                    break;
-                case 'escape':
-                    closeStatInputModal();
-                    event.preventDefault();
-                    break;
-            }
-        });
     </script>
 </body>
 

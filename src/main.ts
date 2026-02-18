@@ -20,8 +20,7 @@ const scorer = new ScoreKeeper();
 
 // Global functions for button clicks
 function scorePoint(player: 1 | 2): void {
-    // Always open stat input modal - statistics are mandatory
-    (window as any).openStatInputModal(player);
+    confirmPoint(player);
 }
 
 function removePoint(player: 1 | 2): void {
@@ -103,13 +102,106 @@ function handleNameKeydown(event: KeyboardEvent, player: 1 | 2): void {
 (window as any).handleNameKeydown = handleNameKeydown;
 (window as any).buildScoreCards = buildScoreCards;
 
-// Rally counter - incremented by Space during play, read by stat modal
+// Keyboard-driven scoring state
+let selectedServe: 'first' | 'second' | null = null;
+let selectedPointType: string | null = null;
 let rallyCounter = 0;
-(window as any).rallyCounter = rallyCounter;
-(window as any).resetRallyCounter = () => {
-    rallyCounter = 0;
-    (window as any).rallyCounter = 0;
+
+const POINT_TYPE_KEYS: Record<string, string> = {
+    'w': 'winner',
+    'u': 'unforced_error',
+    'e': 'forced_error',
+    'n': 'net',
+    'a': 'ace',
+    'r': 'missed_return',
 };
+
+const POINT_TYPE_LABELS: Record<string, string> = {
+    'winner': 'Winner',
+    'unforced_error': 'Unforced Err',
+    'forced_error': 'Forced Err',
+    'net': 'Net Point',
+    'ace': 'Ace',
+    'missed_return': 'Missed Return',
+};
+
+function clearState(): void {
+    selectedServe = null;
+    selectedPointType = null;
+    rallyCounter = 0;
+    updateStateDisplay();
+}
+
+function updateStateDisplay(): void {
+    const serveEl = document.getElementById('serveState');
+    const rallyEl = document.getElementById('rallyState');
+    const typeEl = document.getElementById('pointTypeState');
+
+    if (serveEl) {
+        serveEl.textContent = selectedServe ? `Serve: ${selectedServe === 'first' ? '1st' : '2nd'}` : 'Serve: —';
+        serveEl.classList.toggle('selected', selectedServe !== null);
+    }
+    if (rallyEl) {
+        rallyEl.textContent = `Rally: ${rallyCounter}`;
+        rallyEl.classList.toggle('selected', rallyCounter > 0);
+    }
+    if (typeEl) {
+        typeEl.textContent = selectedPointType ? `Type: ${POINT_TYPE_LABELS[selectedPointType] || selectedPointType}` : 'Type: —';
+        typeEl.classList.toggle('selected', selectedPointType !== null);
+    }
+}
+
+function shakeElement(id: string): void {
+    const el = document.getElementById(id);
+    if (el) {
+        el.classList.remove('error');
+        // Force reflow to restart animation
+        void el.offsetWidth;
+        el.classList.add('error');
+        setTimeout(() => el.classList.remove('error'), 600);
+    }
+}
+
+function confirmPoint(player: 1 | 2): void {
+    // Validate serve type
+    if (!selectedServe) {
+        shakeElement('serveState');
+        return;
+    }
+    // Validate point type
+    if (!selectedPointType) {
+        shakeElement('pointTypeState');
+        return;
+    }
+    // Ace and missed_return only valid when point goes to server
+    if ((selectedPointType === 'ace' || selectedPointType === 'missed_return') && player !== scorer.getServer()) {
+        shakeElement('pointTypeState');
+        return;
+    }
+
+    const metadata: any = {
+        serveResult: selectedServe,
+        pointType: selectedPointType,
+    };
+    if (rallyCounter > 0) {
+        metadata.rallyLength = rallyCounter;
+    }
+
+    scorer.scorePointWithStats(player, metadata);
+    clearState();
+}
+
+function handleDoubleFault(): void {
+    const server = scorer.getServer();
+    const returner: 1 | 2 = server === 1 ? 2 : 1;
+
+    scorer.scorePointWithStats(returner, {
+        serveResult: 'second',
+        pointType: 'double_fault',
+        rallyLength: 1,
+    });
+    clearState();
+}
 
 // Keyboard shortcuts for scoring
 document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -119,27 +211,51 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
         return;
     }
 
-    // Ignore scoring shortcuts when stat input modal is open
-    const statModal = document.getElementById('statInputModal');
-    if (statModal && statModal.style.display === 'block') {
+    // Ignore when settings modal is open
+    const settingsModal = document.getElementById('settingsModal');
+    if (settingsModal && settingsModal.style.display === 'block') {
         return;
     }
 
-    switch (event.key) {
+    const key = event.key;
+
+    switch (key) {
+        case 'f':
+            event.preventDefault();
+            selectedServe = 'first';
+            updateStateDisplay();
+            break;
+        case 's':
+            event.preventDefault();
+            selectedServe = 'second';
+            updateStateDisplay();
+            break;
         case ' ':
             event.preventDefault();
             rallyCounter++;
-            (window as any).rallyCounter = rallyCounter;
+            updateStateDisplay();
+            break;
+        case 'w':
+        case 'u':
+        case 'e':
+        case 'n':
+        case 'a':
+        case 'r':
+            event.preventDefault();
+            selectedPointType = POINT_TYPE_KEYS[key];
+            updateStateDisplay();
+            break;
+        case 'd':
+            event.preventDefault();
+            handleDoubleFault();
             break;
         case '1':
-            // Add point to player 1
             event.preventDefault();
-            scorePoint(1);
+            confirmPoint(1);
             break;
         case '2':
-            // Add point to player 2
             event.preventDefault();
-            scorePoint(2);
+            confirmPoint(2);
             break;
         case '!':
             // Remove point from player 1 (Shift + 1)
@@ -148,6 +264,10 @@ document.addEventListener('keydown', (event: KeyboardEvent) => {
         case '@':
             // Remove point from player 2 (Shift + 2)
             removePoint(2);
+            break;
+        case 'Escape':
+            event.preventDefault();
+            clearState();
             break;
     }
 });
