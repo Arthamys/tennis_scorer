@@ -1,1320 +1,1656 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tennis Score Keeper</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            color: var(--text-color, white);
-        }
-
-        .tennis-app {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            max-width: 800px;
-            width: 100%;
-            position: relative;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            background: linear-gradient(45deg, #fff, #f0f0f0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .subtitle {
-            font-size: 1rem;
-            opacity: 0.8;
-            font-weight: 300;
-        }
-
-        .match-info {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 30px;
-            gap: 20px;
-            width: 100%;
-        }
-
-
-
-        .score-display {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            padding: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            width: auto;
-            overflow-x: auto;
-        }
-
-        .scoreboard {
-            display: grid;
-            grid-template-columns: max-content 40px 40px 1fr;
-            gap: 16px;
-            align-items: center;
-            font-family: monospace;
-        }
-
-        .scoreboard-header {
-            display: contents;
-            font-size: 0.75rem;
-            opacity: 0.7;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-
-        .scoreboard-header>div {
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .player-row {
-            display: contents;
-        }
-
-        .player-name-cell {
-            font-size: 1rem;
-            font-weight: 600;
-            padding: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background-color 0.2s ease;
-            min-width: max-content;
-            white-space: nowrap;
-        }
-
-        .player-name-cell:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-        }
-
-        .player-name-text {
-            flex: 1;
-        }
-
-        .player-name-input {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 4px;
-            padding: 4px 8px;
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            min-width: 100px;
-        }
-
-        .player-name-input:focus {
-            outline: none;
-            border-color: rgba(74, 222, 128, 0.5);
-            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
-        }
-
-        .serve-indicator {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #4ade80;
-            box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
-            opacity: 0;
-        }
-
-        .serve-indicator.active {
-            opacity: 1;
-        }
-
-        .serve-indicator.second-serve {
-            background: #fbbf24;
-            box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
-        }
-
-        .score-cell {
-            text-align: center;
-            font-size: 1.1rem;
-            font-weight: 500;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            padding: 8px 4px;
-            width: 40px;
-        }
-
-        .score-cell.current-game {
-            background: linear-gradient(45deg, rgba(74, 222, 128, 0.3), rgba(34, 197, 94, 0.3));
-            border: 1px solid rgba(74, 222, 128, 0.5);
-        }
-
-        .score-cell.empty-set {
-            background: rgba(255, 255, 255, 0.03);
-            opacity: 0.5;
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        #set-headers-container,
-        #player1-sets-container,
-        #player2-sets-container {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 30px;
-        }
-
-        .btn {
-            background: linear-gradient(45deg, #4ade80, #22c55e);
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(74, 222, 128, 0.4);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(45deg, #64748b, #475569);
-            box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
-        }
-
-        .btn-secondary:hover {
-            box-shadow: 0 8px 20px rgba(100, 116, 139, 0.4);
-        }
-
-        .winner-display {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(45deg, #fbbf24, #f59e0b);
-            border-radius: 16px;
-            top: 20px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            animation: pulse 2s infinite;
-            position: absolute;
-            width: calc(100% - 80px);
-            z-index: 10;
-        }
-
-        .progress-container {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .progress-label {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .progress-bar-wrapper {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            height: 20px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(45deg, #4ade80, #22c55e);
-            border-radius: 8px;
-            transition: width 0.2s ease;
-        }
-
-        .progress-text {
-            text-align: center;
-            margin-top: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            opacity: 0.9;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tennis Score Keeper</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
             }
 
-            50% {
-                opacity: 0.8;
-            }
-        }
-
-        .settings-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .settings-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 500px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-        }
-
-        .modal-content.drag-over {
-            border: 2px dashed rgba(74, 222, 128, 0.8);
-            background: rgba(74, 222, 128, 0.1);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 16px;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: rgba(74, 222, 128, 0.5);
-            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 16px;
-        }
-
-        .form-select option {
-            background: #2c3e50;
-            color: white;
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-
-        /* Statistics Panel Styles */
-        .stats-section {
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
-
-        .stats-toggle {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 14px 20px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .stats-toggle:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-1px);
-        }
-
-        .stats-toggle:active {
-            transform: translateY(0);
-        }
-
-        .stats-icon {
-            font-size: 1.2rem;
-        }
-
-        .stats-label {
-            flex: 1;
-            text-align: left;
-        }
-
-        .stats-chevron {
-            transition: transform 0.3s ease;
-            font-size: 0.8rem;
-        }
-
-        .stats-chevron.expanded {
-            transform: rotate(180deg);
-        }
-
-        .stats-panel {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .stats-panel.expanded {
-            max-height: 2000px;
-        }
-
-        .stats-table {
-            width: 100%;
-            margin-top: 16px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            overflow: hidden;
-            border-collapse: collapse;
-        }
-
-        .stats-table thead {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .stats-table th {
-            padding: 12px 16px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stats-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .stats-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .stats-table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .stat-name {
-            font-weight: 500;
-            opacity: 0.9;
-        }
-
-        .stat-value {
-            text-align: center;
-            font-weight: 600;
-            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
-        }
-
-        /* Stat Input Modal Button Styles */
-        .stat-btn {
-            flex: 0 0 auto;
-            font-size: 0.9rem;
-            padding: 10px 16px;
-        }
-
-        .stat-btn.selected {
-            background: linear-gradient(45deg, #4ade80, #22c55e);
-            border: 2px solid rgba(74, 222, 128, 0.8);
-            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
-        }
-
-        @keyframes shake {
-
-            0%,
-            100% {
-                transform: translateX(0);
+            body {
+                font-family:
+                    "SF Pro Display",
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    Roboto,
+                    sans-serif;
+                background: var(
+                    --bg-gradient,
+                    linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+                );
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                color: var(--text-color, white);
             }
 
-            10%,
-            30%,
-            50%,
-            70%,
-            90% {
-                transform: translateX(-5px);
-            }
-
-            20%,
-            40%,
-            60%,
-            80% {
-                transform: translateX(5px);
-            }
-        }
-
-        /* Keyboard state display */
-        .keyboard-state-display {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-
-        .state-chip {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            opacity: 0.6;
-            transition: all 0.2s ease;
-        }
-
-        .state-chip.selected {
-            background: rgba(74, 222, 128, 0.25);
-            border-color: rgba(74, 222, 128, 0.6);
-            opacity: 1;
-        }
-
-        .state-chip.second-serve.selected {
-            background: rgba(251, 191, 36, 0.25);
-            border-color: rgba(251, 191, 36, 0.6);
-        }
-
-        .state-chip.error {
-            animation: shake 0.5s ease-in-out;
-            border-color: #ef4444;
-            background: rgba(239, 68, 68, 0.2);
-        }
-
-        /* Keyboard shortcuts panel */
-        .shortcuts-panel {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 6px 16px;
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.72rem;
-            opacity: 0.7;
-            line-height: 1.6;
-            max-width: 800px;
-            width: 100%;
-        }
-
-        .shortcuts-panel kbd {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 3px;
-            padding: 0px 5px;
-            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
-            font-size: 0.7rem;
-            min-width: 18px;
-            text-align: center;
-        }
-
-        @media (max-width: 640px) {
             .tennis-app {
-                padding: 24px;
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(20px);
+                border-radius: 24px;
+                padding: 40px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                max-width: 800px;
+                width: 100%;
+                position: relative;
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+
+            .title {
+                font-size: 2.5rem;
+                font-weight: 700;
+                margin-bottom: 8px;
+                background: linear-gradient(45deg, #fff, #f0f0f0);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+                opacity: 0.8;
+                font-weight: 300;
             }
 
             .match-info {
-                flex-direction: column;
-                align-items: stretch;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-bottom: 30px;
+                gap: 20px;
+                width: 100%;
             }
 
-            .sets-games {
-                flex-direction: column;
-                gap: 20px;
+            .score-display {
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 10px;
+                padding: 20px;
+                border: 2px solid rgba(255, 255, 255, 0.1);
+                width: auto;
+                overflow-x: auto;
+            }
+
+            .scoreboard {
+                display: grid;
+                grid-template-columns: max-content 40px 40px 1fr;
+                gap: 16px;
+                align-items: center;
+                font-family: monospace;
+            }
+
+            .scoreboard-header {
+                display: contents;
+                font-size: 0.75rem;
+                opacity: 0.7;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: 600;
+            }
+
+            .scoreboard-header > div {
+                padding-bottom: 8px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .player-row {
+                display: contents;
+            }
+
+            .player-name-cell {
+                font-size: 1rem;
+                font-weight: 600;
+                padding: 8px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: background-color 0.2s ease;
+                min-width: max-content;
+                white-space: nowrap;
+            }
+
+            .player-name-cell:hover {
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+            }
+
+            .player-name-text {
+                flex: 1;
+            }
+
+            .player-name-input {
+                flex: 1;
+                background: rgba(255, 255, 255, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 4px;
+                padding: 4px 8px;
+                color: white;
+                font-size: 1rem;
+                font-weight: 600;
+                min-width: 100px;
+            }
+
+            .player-name-input:focus {
+                outline: none;
+                border-color: rgba(74, 222, 128, 0.5);
+                box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+            }
+
+            .serve-indicator {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: #4ade80;
+                box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+                opacity: 0;
+            }
+
+            .serve-indicator.active {
+                opacity: 1;
+            }
+
+            .serve-indicator.second-serve {
+                background: #fbbf24;
+                box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+            }
+
+            .score-cell {
+                text-align: center;
+                font-size: 1.1rem;
+                font-weight: 500;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+                padding: 8px 4px;
+                width: 40px;
+            }
+
+            .score-cell.current-game {
+                background: linear-gradient(
+                    45deg,
+                    rgba(74, 222, 128, 0.3),
+                    rgba(34, 197, 94, 0.3)
+                );
+                border: 1px solid rgba(74, 222, 128, 0.5);
+            }
+
+            .score-cell.empty-set {
+                background: rgba(255, 255, 255, 0.03);
+                opacity: 0.5;
+                color: rgba(255, 255, 255, 0.4);
+            }
+
+            #set-headers-container,
+            #player1-sets-container,
+            #player2-sets-container {
+                display: flex;
+                gap: 16px;
+                align-items: center;
             }
 
             .controls {
-                flex-direction: column;
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                margin-top: 30px;
+            }
+
+            .btn {
+                background: linear-gradient(45deg, #4ade80, #22c55e);
+                border: none;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 12px;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+            }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(74, 222, 128, 0.4);
+            }
+
+            .btn:active {
+                transform: translateY(0);
+            }
+
+            .btn-secondary {
+                background: linear-gradient(45deg, #64748b, #475569);
+                box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+            }
+
+            .btn-secondary:hover {
+                box-shadow: 0 8px 20px rgba(100, 116, 139, 0.4);
+            }
+
+            .winner-display {
+                text-align: center;
+                padding: 20px;
+                background: linear-gradient(45deg, #fbbf24, #f59e0b);
+                border-radius: 16px;
+                top: 20px;
+                font-size: 1.2rem;
+                font-weight: 600;
+                animation: pulse 2s infinite;
+                position: absolute;
+                width: calc(100% - 80px);
+                z-index: 10;
+            }
+
+            .progress-container {
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 12px;
+                padding: 16px 20px;
+                margin-bottom: 20px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .progress-label {
+                font-size: 1rem;
+                font-weight: 600;
+                margin-bottom: 10px;
+                text-align: center;
+            }
+
+            .progress-bar-wrapper {
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 8px;
+                height: 20px;
+                overflow: hidden;
+            }
+
+            .progress-bar {
+                height: 100%;
+                width: 0%;
+                background: linear-gradient(45deg, #4ade80, #22c55e);
+                border-radius: 8px;
+                transition: width 0.2s ease;
+            }
+
+            .progress-text {
+                text-align: center;
+                margin-top: 8px;
+                font-size: 0.9rem;
+                font-weight: 500;
+                opacity: 0.9;
+            }
+
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+
+                50% {
+                    opacity: 0.8;
+                }
             }
 
             .settings-btn {
-                top: 10px;
-                right: 10px;
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                background: rgba(255, 255, 255, 0.15);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: white;
+                padding: 8px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
-        }
-    </style>
-</head>
 
-<body>
-    <div class="shortcuts-panel">
-        <span><kbd>F</kbd> 1st serve</span>
-        <span><kbd>S</kbd> 2nd serve</span>
-        <span><kbd>Space</kbd> rally+1</span>
-        <span><kbd>W</kbd> winner</span>
-        <span><kbd>U</kbd> unforced</span>
-        <span><kbd>E</kbd> forced</span>
-        <span><kbd>N</kbd> net</span>
-        <span><kbd>A</kbd> ace</span>
-        <span><kbd>R</kbd> missed return</span>
-        <span><kbd>D</kbd> double fault</span>
-        <span><kbd>1</kbd><kbd>2</kbd> point to player</span>
-        <span><kbd>Esc</kbd> clear</span>
-    </div>
+            .settings-btn:hover {
+                background: rgba(255, 255, 255, 0.25);
+            }
 
-    <div class="tennis-app">
-        <button class="settings-btn" onclick="openSettingsModal()">⚙️</button>
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(5px);
+            }
 
-        <!-- Progress Bar for Scorecard Generation -->
-        <div id="progressContainer" class="progress-container" style="display: none;">
-            <div class="progress-label">Generating scorecards...</div>
-            <div class="progress-bar-wrapper">
-                <div id="progressBar" class="progress-bar"></div>
-            </div>
-            <div id="progressText" class="progress-text">0%</div>
+            .modal-content {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(20px);
+                margin: 5% auto;
+                padding: 30px;
+                border-radius: 20px;
+                width: 90%;
+                max-width: 500px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: white;
+            }
+
+            .modal-content.drag-over {
+                border: 2px dashed rgba(74, 222, 128, 0.8);
+                background: rgba(74, 222, 128, 0.1);
+            }
+
+            .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+
+            .modal-title {
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+
+            .close {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 24px;
+                cursor: pointer;
+                padding: 5px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 500;
+            }
+
+            .form-input {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                font-size: 16px;
+            }
+
+            .form-input:focus {
+                outline: none;
+                border-color: rgba(74, 222, 128, 0.5);
+                box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+            }
+
+            .form-select {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
+                font-size: 16px;
+            }
+
+            .form-select option {
+                background: #2c3e50;
+                color: white;
+            }
+
+            .modal-actions {
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+                margin-top: 20px;
+            }
+
+            /* Statistics Panel Styles */
+            .stats-section {
+                margin-top: 30px;
+                margin-bottom: 20px;
+            }
+
+            .stats-toggle {
+                width: 100%;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: white;
+                padding: 14px 20px;
+                border-radius: 12px;
+                font-size: 1rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .stats-toggle:hover {
+                background: rgba(255, 255, 255, 0.15);
+                transform: translateY(-1px);
+            }
+
+            .stats-toggle:active {
+                transform: translateY(0);
+            }
+
+            .stats-icon {
+                font-size: 1.2rem;
+            }
+
+            .stats-label {
+                flex: 1;
+                text-align: left;
+            }
+
+            .stats-chevron {
+                transition: transform 0.3s ease;
+                font-size: 0.8rem;
+            }
+
+            .stats-chevron.expanded {
+                transform: rotate(180deg);
+            }
+
+            .stats-panel {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+
+            .stats-panel.expanded {
+                max-height: 2000px;
+            }
+
+            .stats-table {
+                width: 100%;
+                margin-top: 16px;
+                background: rgba(255, 255, 255, 0.08);
+                border-radius: 10px;
+                overflow: hidden;
+                border-collapse: collapse;
+            }
+
+            .stats-table thead {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .stats-table th {
+                padding: 12px 16px;
+                text-align: left;
+                font-weight: 600;
+                font-size: 0.9rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .stats-table td {
+                padding: 12px 16px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+
+            .stats-table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            .stats-table tbody tr:hover {
+                background: rgba(255, 255, 255, 0.05);
+            }
+
+            .stat-name {
+                font-weight: 500;
+                opacity: 0.9;
+            }
+
+            .stat-value {
+                text-align: center;
+                font-weight: 600;
+                font-family: "SF Mono", "Monaco", "Courier New", monospace;
+            }
+
+            /* Stat Input Modal Button Styles */
+            .stat-btn {
+                flex: 0 0 auto;
+                font-size: 0.9rem;
+                padding: 10px 16px;
+            }
+
+            .stat-btn.selected {
+                background: linear-gradient(45deg, #4ade80, #22c55e);
+                border: 2px solid rgba(74, 222, 128, 0.8);
+                box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
+            }
+
+            @keyframes shake {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+
+                10%,
+                30%,
+                50%,
+                70%,
+                90% {
+                    transform: translateX(-5px);
+                }
+
+                20%,
+                40%,
+                60%,
+                80% {
+                    transform: translateX(5px);
+                }
+            }
+
+            /* Keyboard state display */
+            .keyboard-state-display {
+                display: flex;
+                justify-content: center;
+                gap: 12px;
+                margin-top: 20px;
+                margin-bottom: 10px;
+            }
+
+            .state-chip {
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: 500;
+                opacity: 0.6;
+                transition: all 0.2s ease;
+            }
+
+            .state-chip.selected {
+                background: rgba(74, 222, 128, 0.25);
+                border-color: rgba(74, 222, 128, 0.6);
+                opacity: 1;
+            }
+
+            .state-chip.second-serve.selected {
+                background: rgba(251, 191, 36, 0.25);
+                border-color: rgba(251, 191, 36, 0.6);
+            }
+
+            .state-chip.error {
+                animation: shake 0.5s ease-in-out;
+                border-color: #ef4444;
+                background: rgba(239, 68, 68, 0.2);
+            }
+
+            /* Keyboard shortcuts panel */
+            .shortcuts-panel {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 6px 16px;
+                margin-bottom: 10px;
+                padding: 8px 12px;
+                background: rgba(255, 255, 255, 0.06);
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                font-size: 0.72rem;
+                opacity: 0.7;
+                line-height: 1.6;
+                max-width: 800px;
+                width: 100%;
+            }
+
+            .shortcuts-panel kbd {
+                display: inline-block;
+                background: rgba(255, 255, 255, 0.15);
+                border: 1px solid rgba(255, 255, 255, 0.25);
+                border-radius: 3px;
+                padding: 0px 5px;
+                font-family: "SF Mono", "Monaco", "Courier New", monospace;
+                font-size: 0.7rem;
+                min-width: 18px;
+                text-align: center;
+            }
+
+            @media (max-width: 640px) {
+                .tennis-app {
+                    padding: 24px;
+                }
+
+                .match-info {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .sets-games {
+                    flex-direction: column;
+                    gap: 20px;
+                }
+
+                .controls {
+                    flex-direction: column;
+                }
+
+                .settings-btn {
+                    top: 10px;
+                    right: 10px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="shortcuts-panel">
+            <span><kbd>F</kbd> 1st serve</span>
+            <span><kbd>S</kbd> 2nd serve</span>
+            <span><kbd>Space</kbd> rally+1</span>
+            <span><kbd>W</kbd> winner</span>
+            <span><kbd>U</kbd> unforced</span>
+            <span><kbd>E</kbd> forced</span>
+            <span><kbd>N</kbd> net</span>
+            <span><kbd>A</kbd> ace</span>
+            <span><kbd>R</kbd> missed return</span>
+            <span><kbd>D</kbd> double fault</span>
+            <span><kbd>1</kbd><kbd>2</kbd> point to player</span>
+            <span><kbd>Esc</kbd> clear</span>
         </div>
 
-        <div class="header">
-            <h1 class="title">Tennis Scorer</h1>
-            <p class="subtitle">Professional match scoring</p>
-        </div>
-
-        <div class="match-info">
-            <div class="score-display" id="score-display">
-                <div class="scoreboard" id="scoreboard">
-                    <div class="scoreboard-header">
-                        <div>Player</div>
-                        <div>Points</div>
-                        <div>Games</div>
-                        <div id="set-headers-container"></div>
-                    </div>
-                    <div class="player-row" id="player1Row">
-                        <div class="player-name-cell" id="player1NameScore" onclick="editPlayerName(1)">
-                            <div class="serve-indicator" id="serve1"></div>
-                            <span id="player1NameSpan" class="player-name-text">Player 1</span>
-                            <input type="text" id="player1NameInput" class="player-name-input" style="display: none;"
-                                onblur="savePlayerName(1)" onkeydown="handleNameKeydown(event, 1)">
-                        </div>
-                        <div class="score-cell current-game" id="gameScore1">0</div>
-                        <div class="score-cell" id="games1">0</div>
-                        <div id="player1-sets-container"></div>
-                    </div>
-
-                    <div class="player-row" id="player2Row">
-                        <div class="player-name-cell" id="player2NameScore" onclick="editPlayerName(2)">
-                            <div class="serve-indicator" id="serve2"></div>
-                            <span id="player2NameSpan" class="player-name-text">Player 2</span>
-                            <input type="text" id="player2NameInput" class="player-name-input" style="display: none;"
-                                onblur="savePlayerName(2)" onkeydown="handleNameKeydown(event, 2)">
-                        </div>
-                        <div class="score-cell current-game" id="gameScore2">0</div>
-                        <div class="score-cell" id="games2">0</div>
-                        <div id="player2-sets-container"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Keyboard State Display -->
-        <div class="keyboard-state-display" id="keyboardStateDisplay">
-            <span class="state-chip" id="serveState">Serve: —</span>
-            <span class="state-chip" id="rallyState">Rally: 0</span>
-            <span class="state-chip" id="pointTypeState">Type: —</span>
-        </div>
-
-        <!-- Statistics Panel -->
-        <div class="stats-section">
-            <button class="stats-toggle" id="statsToggle" onclick="toggleStats()">
-                <span class="stats-icon">📊</span>
-                <span class="stats-label">Match Statistics</span>
-                <span class="stats-chevron" id="statsChevron">▼</span>
+        <div class="tennis-app">
+            <button class="settings-btn" onclick="openSettingsModal()">
+                ⚙️
             </button>
-            <div class="stats-panel" id="statsPanel">
-                <table class="stats-table">
-                    <thead>
-                        <tr>
-                            <th class="stat-name">Statistic</th>
-                            <th class="stat-value" id="statsPlayer1Header">Player 1</th>
-                            <th class="stat-value" id="statsPlayer2Header">Player 2</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="stat-name">1st Serve %</td>
-                            <td class="stat-value" id="stat-firstServe-1">0% (0/0)</td>
-                            <td class="stat-value" id="stat-firstServe-2">0% (0/0)</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">2nd Serve %</td>
-                            <td class="stat-value" id="stat-secondServe-1">0% (0/0)</td>
-                            <td class="stat-value" id="stat-secondServe-2">0% (0/0)</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">1st Serve Pts Won</td>
-                            <td class="stat-value" id="stat-pointsWonOnFirstServe-1">0</td>
-                            <td class="stat-value" id="stat-pointsWonOnFirstServe-2">0</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">2nd Serve Pts Won</td>
-                            <td class="stat-value" id="stat-pointsWonOnSecondServe-1">0</td>
-                            <td class="stat-value" id="stat-pointsWonOnSecondServe-2">0</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">Aces</td>
-                            <td class="stat-value" id="stat-aces-1">0</td>
-                            <td class="stat-value" id="stat-aces-2">0</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">Winners</td>
-                            <td class="stat-value" id="stat-winners-1">0</td>
-                            <td class="stat-value" id="stat-winners-2">0</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">Unforced Errors</td>
-                            <td class="stat-value" id="stat-unforcedErrors-1">0</td>
-                            <td class="stat-value" id="stat-unforcedErrors-2">0</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">Forced Errors</td>
-                            <td class="stat-value" id="stat-forcedErrors-1">0</td>
-                            <td class="stat-value" id="stat-forcedErrors-2">0</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">Net Points Won</td>
-                            <td class="stat-value" id="stat-netPoints-1">0</td>
-                            <td class="stat-value" id="stat-netPoints-2">0</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">1st Serve Return Missed</td>
-                            <td class="stat-value" id="stat-firstServeMissedReturns-1">0</td>
-                            <td class="stat-value" id="stat-firstServeMissedReturns-2">0</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">2nd Serve Return Missed</td>
-                            <td class="stat-value" id="stat-secondServeMissedReturns-1">0</td>
-                            <td class="stat-value" id="stat-secondServeMissedReturns-2">0</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">Break Points</td>
-                            <td class="stat-value" id="stat-breakPoints-1">0% (0/0)</td>
-                            <td class="stat-value" id="stat-breakPoints-2">0% (0/0)</td>
-                        </tr>
-                        <tr>
-                            <td class="stat-name">Points Won</td>
-                            <td class="stat-value" id="stat-pointsWon-1">0%</td>
-                            <td class="stat-value" id="stat-pointsWon-2">0%</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
 
-        <div class="controls">
-            <button class="btn btn-secondary" onclick="resetMatch()">New Match</button>
-            <button class="btn btn-secondary" onclick="buildScoreCards()">Get Scorecards</button>
-        </div>
-
-        <div id="winner" class="winner-display" style="display: none;"></div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Match Configuration</h2>
-                <button class="close" onclick="closeSettingsModal()">&times;</button>
+            <!-- Progress Bar for Scorecard Generation -->
+            <div
+                id="progressContainer"
+                class="progress-container"
+                style="display: none"
+            >
+                <div class="progress-label">Generating scorecards...</div>
+                <div class="progress-bar-wrapper">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <div id="progressText" class="progress-text">0%</div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="gamesPerSet">Games Per Set:</label>
-                <input type="number" id="gamesPerSet" class="form-input" min="1" max="20" value="6">
+            <div class="header">
+                <h1 class="title">Tennis Scorer</h1>
+                <p class="subtitle">Professional match scoring</p>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="setsToWin">Sets to Win:</label>
-                <input type="number" id="setsToWin" class="form-input" min="1" max="5" value="2">
-            </div>
+            <div class="match-info">
+                <div class="score-display" id="score-display">
+                    <div class="scoreboard" id="scoreboard">
+                        <div class="scoreboard-header">
+                            <div>Player</div>
+                            <div>Points</div>
+                            <div>Games</div>
+                            <div id="set-headers-container"></div>
+                        </div>
+                        <div class="player-row" id="player1Row">
+                            <div
+                                class="player-name-cell"
+                                id="player1NameScore"
+                                onclick="editPlayerName(1)"
+                            >
+                                <div class="serve-indicator" id="serve1"></div>
+                                <span
+                                    id="player1NameSpan"
+                                    class="player-name-text"
+                                    >Player 1</span
+                                >
+                                <input
+                                    type="text"
+                                    id="player1NameInput"
+                                    class="player-name-input"
+                                    style="display: none"
+                                    onblur="savePlayerName(1)"
+                                    onkeydown="handleNameKeydown(event, 1)"
+                                />
+                            </div>
+                            <div
+                                class="score-cell current-game"
+                                id="gameScore1"
+                            >
+                                0
+                            </div>
+                            <div class="score-cell" id="games1">0</div>
+                            <div id="player1-sets-container"></div>
+                        </div>
 
-            <div class="form-group">
-                <label class="form-label" for="theme">Theme:</label>
-                <select id="theme" class="form-select">
-                    <option value="default">Default</option>
-                    <option value="sunset">Sunset</option>
-                    <option value="forest">Forest</option>
-                    <option value="royal">Royal</option>
-                    <option value="dark">Dark</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Import Match:</label>
-                <button class="btn btn-secondary" onclick="triggerImportFile()" style="width: 100%;">
-                    Import match score
-                </button>
-                <input type="file" id="importFileInput" accept=".json" style="display: none;"
-                    onchange="handleImportFileSelect(event)">
-            </div>
-
-            <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
-                <button class="btn" onclick="saveSettings()">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stat Input Modal -->
-    <div id="statInputModal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
-            <div class="modal-header">
-                <h2 class="modal-title">Point Statistics</h2>
-                <button class="close" onclick="closeStatInputModal()">&times;</button>
-            </div>
-
-            <div style="margin-bottom: 20px; padding: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 8px;">
-                <strong id="statModalPointInfo">Point to Player 1</strong>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Serve Result</label>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="first"
-                        onclick="selectStatButton(this)">
-                        1st In <span style="opacity: 0.7; font-size: 0.85rem;">(F)</span>
-                    </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="serve" data-value="second"
-                        onclick="selectStatButton(this)">
-                        2nd In <span style="opacity: 0.7; font-size: 0.85rem;">(S)</span>
-                    </button>
+                        <div class="player-row" id="player2Row">
+                            <div
+                                class="player-name-cell"
+                                id="player2NameScore"
+                                onclick="editPlayerName(2)"
+                            >
+                                <div class="serve-indicator" id="serve2"></div>
+                                <span
+                                    id="player2NameSpan"
+                                    class="player-name-text"
+                                    >Player 2</span
+                                >
+                                <input
+                                    type="text"
+                                    id="player2NameInput"
+                                    class="player-name-input"
+                                    style="display: none"
+                                    onblur="savePlayerName(2)"
+                                    onkeydown="handleNameKeydown(event, 2)"
+                                />
+                            </div>
+                            <div
+                                class="score-cell current-game"
+                                id="gameScore2"
+                            >
+                                0
+                            </div>
+                            <div class="score-cell" id="games2">0</div>
+                            <div id="player2-sets-container"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Point Type</label>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="ace"
-                        onclick="selectStatButton(this)">
-                        Ace <span style="opacity: 0.7; font-size: 0.85rem;">(A)</span>
-                    </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="double_fault"
-                        onclick="selectStatButton(this)">
-                        Double Fault <span style="opacity: 0.7; font-size: 0.85rem;">(D)</span>
-                    </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="winner"
-                        onclick="selectStatButton(this)">
-                        Winner <span style="opacity: 0.7; font-size: 0.85rem;">(W)</span>
-                    </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="unforced_error"
-                        onclick="selectStatButton(this)">
-                        Unforced Error <span style="opacity: 0.7; font-size: 0.85rem;">(U)</span>
-                    </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="forced_error"
-                        onclick="selectStatButton(this)">
-                        Forced Error <span style="opacity: 0.7; font-size: 0.85rem;">(E)</span>
-                    </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="net"
-                        onclick="selectStatButton(this)">
-                        Net Point <span style="opacity: 0.7; font-size: 0.85rem;">(N)</span>
-                    </button>
-                    <button class="btn btn-secondary stat-btn" data-stat="type" data-value="missed_return"
-                        onclick="selectStatButton(this)">
-                        Missed Return <span style="opacity: 0.7; font-size: 0.85rem;">(R)</span>
-                    </button>
+            <!-- Keyboard State Display -->
+            <div class="keyboard-state-display" id="keyboardStateDisplay">
+                <span class="state-chip" id="serveState">Serve: —</span>
+                <span class="state-chip" id="rallyState">Rally: 0</span>
+                <span class="state-chip" id="pointTypeState">Type: —</span>
+            </div>
+
+            <!-- Statistics Panel -->
+            <div class="stats-section">
+                <button
+                    class="stats-toggle"
+                    id="statsToggle"
+                    onclick="toggleStats()"
+                >
+                    <span class="stats-icon">📊</span>
+                    <span class="stats-label">Match Statistics</span>
+                    <span class="stats-chevron" id="statsChevron">▼</span>
+                </button>
+                <div class="stats-panel" id="statsPanel">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th class="stat-name">Statistic</th>
+                                <th class="stat-value" id="statsPlayer1Header">
+                                    Player 1
+                                </th>
+                                <th class="stat-value" id="statsPlayer2Header">
+                                    Player 2
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="stat-name">1st Serve %</td>
+                                <td class="stat-value" id="stat-firstServe-1">
+                                    0% (0/0)
+                                </td>
+                                <td class="stat-value" id="stat-firstServe-2">
+                                    0% (0/0)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">2nd Serve %</td>
+                                <td class="stat-value" id="stat-secondServe-1">
+                                    0% (0/0)
+                                </td>
+                                <td class="stat-value" id="stat-secondServe-2">
+                                    0% (0/0)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">1st Serve Pts Won</td>
+                                <td
+                                    class="stat-value"
+                                    id="stat-pointsWonOnFirstServe-1"
+                                >
+                                    0
+                                </td>
+                                <td
+                                    class="stat-value"
+                                    id="stat-pointsWonOnFirstServe-2"
+                                >
+                                    0
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">2nd Serve Pts Won</td>
+                                <td
+                                    class="stat-value"
+                                    id="stat-pointsWonOnSecondServe-1"
+                                >
+                                    0
+                                </td>
+                                <td
+                                    class="stat-value"
+                                    id="stat-pointsWonOnSecondServe-2"
+                                >
+                                    0
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">Aces</td>
+                                <td class="stat-value" id="stat-aces-1">0</td>
+                                <td class="stat-value" id="stat-aces-2">0</td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">Winners</td>
+                                <td class="stat-value" id="stat-winners-1">
+                                    0
+                                </td>
+                                <td class="stat-value" id="stat-winners-2">
+                                    0
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">Unforced Errors</td>
+                                <td
+                                    class="stat-value"
+                                    id="stat-unforcedErrors-1"
+                                >
+                                    0
+                                </td>
+                                <td
+                                    class="stat-value"
+                                    id="stat-unforcedErrors-2"
+                                >
+                                    0
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">Forced Errors</td>
+                                <td class="stat-value" id="stat-forcedErrors-1">
+                                    0
+                                </td>
+                                <td class="stat-value" id="stat-forcedErrors-2">
+                                    0
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">Net Points Won</td>
+                                <td class="stat-value" id="stat-netPoints-1">
+                                    0
+                                </td>
+                                <td class="stat-value" id="stat-netPoints-2">
+                                    0
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">
+                                    1st Serve Return Missed
+                                </td>
+                                <td
+                                    class="stat-value"
+                                    id="stat-firstServeMissedReturns-1"
+                                >
+                                    0
+                                </td>
+                                <td
+                                    class="stat-value"
+                                    id="stat-firstServeMissedReturns-2"
+                                >
+                                    0
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">
+                                    2nd Serve Return Missed
+                                </td>
+                                <td
+                                    class="stat-value"
+                                    id="stat-secondServeMissedReturns-1"
+                                >
+                                    0
+                                </td>
+                                <td
+                                    class="stat-value"
+                                    id="stat-secondServeMissedReturns-2"
+                                >
+                                    0
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">Break Points</td>
+                                <td class="stat-value" id="stat-breakPoints-1">
+                                    0% (0/0)
+                                </td>
+                                <td class="stat-value" id="stat-breakPoints-2">
+                                    0% (0/0)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="stat-name">Points Won</td>
+                                <td class="stat-value" id="stat-pointsWon-1">
+                                    0%
+                                </td>
+                                <td class="stat-value" id="stat-pointsWon-2">
+                                    0%
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Rally Length (optional)</label>
-                <input type="number" id="rallyLengthInput" class="form-input" min="1" placeholder="Number of shots"
-                    style="max-width: 200px;">
-            </div>
-
-            <div class="modal-actions">
-                <button class="btn" onclick="confirmStatInput()">
-                    Confirm <span style="opacity: 0.7; font-size: 0.85rem;">(Enter)</span>
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="resetMatch()">
+                    New Match
+                </button>
+                <button class="btn btn-secondary" onclick="buildScoreCards()">
+                    Get Scorecards
                 </button>
             </div>
 
-            <div style="margin-top: 16px; font-size: 0.85rem; opacity: 0.7; text-align: center;">
-                Press keyboard shortcuts or click buttons
+            <div id="winner" class="winner-display" style="display: none"></div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">Match Configuration</h2>
+                    <button class="close" onclick="closeSettingsModal()">
+                        &times;
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="gamesPerSet"
+                        >Games Per Set:</label
+                    >
+                    <input
+                        type="number"
+                        id="gamesPerSet"
+                        class="form-input"
+                        min="1"
+                        max="20"
+                        value="6"
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="setsToWin"
+                        >Sets to Win:</label
+                    >
+                    <input
+                        type="number"
+                        id="setsToWin"
+                        class="form-input"
+                        min="1"
+                        max="5"
+                        value="2"
+                    />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="theme">Theme:</label>
+                    <select id="theme" class="form-select">
+                        <option value="default">Default</option>
+                        <option value="sunset">Sunset</option>
+                        <option value="forest">Forest</option>
+                        <option value="royal">Royal</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <input
+                        type="checkbox"
+                        id="includeDoubleFaults"
+                        name="includeDoubleFaults"
+                        value="Export Double Faults"
+                    />
+                    <label class="slider-label">
+                        Export Double Fault Scorecards
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Import Match:</label>
+                    <button
+                        class="btn btn-secondary"
+                        onclick="triggerImportFile()"
+                        style="width: 100%"
+                    >
+                        Import match score
+                    </button>
+                    <input
+                        type="file"
+                        id="importFileInput"
+                        accept=".json"
+                        style="display: none"
+                        onchange="handleImportFileSelect(event)"
+                    />
+                </div>
+
+                <div class="modal-actions">
+                    <button
+                        class="btn btn-secondary"
+                        onclick="closeSettingsModal()"
+                    >
+                        Cancel
+                    </button>
+                    <button class="btn" onclick="saveSettings()">Save</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <script type="module" src="src/main.ts"> </script>
+        <!-- Stat Input Modal -->
+        <div id="statInputModal" class="modal">
+            <div class="modal-content" style="max-width: 600px">
+                <div class="modal-header">
+                    <h2 class="modal-title">Point Statistics</h2>
+                    <button class="close" onclick="closeStatInputModal()">
+                        &times;
+                    </button>
+                </div>
 
-    <script>
-        function openSettingsModal() {
-            if (typeof scorer !== 'undefined') {
-                const config = scorer.getConfig();
-                document.getElementById('gamesPerSet').value = config.gamesPerSet;
-                document.getElementById('setsToWin').value = config.setsToWin;
-                document.getElementById('theme').value = config.theme;
-            }
+                <div
+                    style="
+                        margin-bottom: 20px;
+                        padding: 12px;
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 8px;
+                    "
+                >
+                    <strong id="statModalPointInfo">Point to Player 1</strong>
+                </div>
 
-            document.getElementById('settingsModal').style.display = 'block';
-        }
+                <div class="form-group">
+                    <label class="form-label">Serve Result</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                        <button
+                            class="btn btn-secondary stat-btn"
+                            data-stat="serve"
+                            data-value="first"
+                            onclick="selectStatButton(this)"
+                        >
+                            1st In
+                            <span style="opacity: 0.7; font-size: 0.85rem"
+                                >(F)</span
+                            >
+                        </button>
+                        <button
+                            class="btn btn-secondary stat-btn"
+                            data-stat="serve"
+                            data-value="second"
+                            onclick="selectStatButton(this)"
+                        >
+                            2nd In
+                            <span style="opacity: 0.7; font-size: 0.85rem"
+                                >(S)</span
+                            >
+                        </button>
+                    </div>
+                </div>
 
-        function closeSettingsModal() {
-            document.getElementById('settingsModal').style.display = 'none';
-        }
+                <div class="form-group">
+                    <label class="form-label">Point Type</label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                        <button
+                            class="btn btn-secondary stat-btn"
+                            data-stat="type"
+                            data-value="ace"
+                            onclick="selectStatButton(this)"
+                        >
+                            Ace
+                            <span style="opacity: 0.7; font-size: 0.85rem"
+                                >(A)</span
+                            >
+                        </button>
+                        <button
+                            class="btn btn-secondary stat-btn"
+                            data-stat="type"
+                            data-value="double_fault"
+                            onclick="selectStatButton(this)"
+                        >
+                            Double Fault
+                            <span style="opacity: 0.7; font-size: 0.85rem"
+                                >(D)</span
+                            >
+                        </button>
+                        <button
+                            class="btn btn-secondary stat-btn"
+                            data-stat="type"
+                            data-value="winner"
+                            onclick="selectStatButton(this)"
+                        >
+                            Winner
+                            <span style="opacity: 0.7; font-size: 0.85rem"
+                                >(W)</span
+                            >
+                        </button>
+                        <button
+                            class="btn btn-secondary stat-btn"
+                            data-stat="type"
+                            data-value="unforced_error"
+                            onclick="selectStatButton(this)"
+                        >
+                            Unforced Error
+                            <span style="opacity: 0.7; font-size: 0.85rem"
+                                >(U)</span
+                            >
+                        </button>
+                        <button
+                            class="btn btn-secondary stat-btn"
+                            data-stat="type"
+                            data-value="forced_error"
+                            onclick="selectStatButton(this)"
+                        >
+                            Forced Error
+                            <span style="opacity: 0.7; font-size: 0.85rem"
+                                >(E)</span
+                            >
+                        </button>
+                        <button
+                            class="btn btn-secondary stat-btn"
+                            data-stat="type"
+                            data-value="net"
+                            onclick="selectStatButton(this)"
+                        >
+                            Net Point
+                            <span style="opacity: 0.7; font-size: 0.85rem"
+                                >(N)</span
+                            >
+                        </button>
+                        <button
+                            class="btn btn-secondary stat-btn"
+                            data-stat="type"
+                            data-value="missed_return"
+                            onclick="selectStatButton(this)"
+                        >
+                            Missed Return
+                            <span style="opacity: 0.7; font-size: 0.85rem"
+                                >(R)</span
+                            >
+                        </button>
+                    </div>
+                </div>
 
-        function saveSettings() {
-            const gamesPerSet = parseInt(document.getElementById('gamesPerSet').value);
-            const setsToWin = parseInt(document.getElementById('setsToWin').value);
-            const theme = document.getElementById('theme').value;
+                <div class="form-group">
+                    <label class="form-label">Rally Length (optional)</label>
+                    <input
+                        type="number"
+                        id="rallyLengthInput"
+                        class="form-input"
+                        min="1"
+                        placeholder="Number of shots"
+                        style="max-width: 200px"
+                    />
+                </div>
 
-            if (typeof scorer !== 'undefined') {
-                scorer.updateConfig({
-                    gamesPerSet: gamesPerSet,
-                    setsToWin: setsToWin,
-                    theme: theme
-                });
-            }
+                <div class="modal-actions">
+                    <button class="btn" onclick="confirmStatInput()">
+                        Confirm
+                        <span style="opacity: 0.7; font-size: 0.85rem"
+                            >(Enter)</span
+                        >
+                    </button>
+                </div>
 
-            closeSettingsModal();
-        }
+                <div
+                    style="
+                        margin-top: 16px;
+                        font-size: 0.85rem;
+                        opacity: 0.7;
+                        text-align: center;
+                    "
+                >
+                    Press keyboard shortcuts or click buttons
+                </div>
+            </div>
+        </div>
 
-        // Import match score functions
-        function triggerImportFile() {
-            document.getElementById('importFileInput').click();
-        }
+        <script type="module" src="src/main.ts"></script>
 
-        function handleImportFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                processImportFile(file);
-            }
-            // Reset the input so the same file can be selected again
-            event.target.value = '';
-        }
-
-        function handleDragOver(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            event.currentTarget.classList.add('drag-over');
-        }
-
-        function handleDragLeave(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            event.currentTarget.classList.remove('drag-over');
-        }
-
-        function handleDrop(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            event.currentTarget.classList.remove('drag-over');
-
-            const files = event.dataTransfer.files;
-            if (files.length > 0) {
-                const file = files[0];
-                if (file.type === 'application/json' || file.name.endsWith('.json')) {
-                    processImportFile(file);
-                } else {
-                    alert('Please drop a JSON file.');
+        <script>
+            function openSettingsModal() {
+                if (typeof scorer !== "undefined") {
+                    const config = scorer.getConfig();
+                    document.getElementById("gamesPerSet").value =
+                        config.gamesPerSet;
+                    document.getElementById("setsToWin").value =
+                        config.setsToWin;
+                    document.getElementById("theme").value = config.theme;
                 }
-            }
-        }
 
-        function processImportFile(file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (validateMatchScoreExport(data)) {
-                        performMatchImport(data);
-                    }
-                } catch (error) {
-                    alert('Error reading file: ' + error.message);
+                document.getElementById("settingsModal").style.display =
+                    "block";
+            }
+
+            function closeSettingsModal() {
+                document.getElementById("settingsModal").style.display = "none";
+            }
+
+            function saveSettings() {
+                const gamesPerSet = parseInt(
+                    document.getElementById("gamesPerSet").value,
+                );
+                const setsToWin = parseInt(
+                    document.getElementById("setsToWin").value,
+                );
+                const theme = document.getElementById("theme").value;
+
+                if (typeof scorer !== "undefined") {
+                    scorer.updateConfig({
+                        gamesPerSet: gamesPerSet,
+                        setsToWin: setsToWin,
+                        theme: theme,
+                    });
                 }
-            };
-            reader.onerror = function () {
-                alert('Error reading file.');
-            };
-            reader.readAsText(file);
-        }
 
-        function validateMatchScoreExport(data) {
-            // Check matchDetails
-            if (!data.matchDetails ||
-                typeof data.matchDetails.gamesPerSet !== 'number' ||
-                typeof data.matchDetails.setsToWin !== 'number' ||
-                typeof data.matchDetails.tieBreakPoints !== 'number') {
-                alert('Invalid file: missing or invalid matchDetails.');
-                return false;
-            }
-
-            // Check players
-            if (!data.players ||
-                typeof data.players.player1 !== 'string' ||
-                typeof data.players.player2 !== 'string') {
-                alert('Invalid file: missing or invalid players.');
-                return false;
-            }
-
-            // Check pointsHistory
-            if (!Array.isArray(data.pointsHistory)) {
-                alert('Invalid file: missing or invalid pointsHistory.');
-                return false;
-            }
-
-            // Validate each point has required fields
-            for (let i = 0; i < data.pointsHistory.length; i++) {
-                const point = data.pointsHistory[i];
-                if (!point ||
-                    (point.winner !== 1 && point.winner !== 2) ||
-                    (point.server !== 1 && point.server !== 2) ||
-                    typeof point.serveResult !== 'string' ||
-                    typeof point.pointType !== 'string') {
-                    alert(`Invalid file: point ${i + 1} is missing required fields (winner, server, serveResult, pointType).`);
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        function performMatchImport(data) {
-            if (typeof scorer === 'undefined') {
-                alert('Scorer not initialized.');
-                return;
-            }
-
-            // Import the match
-            scorer.importMatch(data);
-
-            // Update player names in the DOM
-            const player1 = data.players.player1;
-            const player2 = data.players.player2;
-
-            // Scoreboard names
-            const player1NameSpan = document.getElementById('player1NameSpan');
-            const player2NameSpan = document.getElementById('player2NameSpan');
-            if (player1NameSpan) player1NameSpan.textContent = player1;
-            if (player2NameSpan) player2NameSpan.textContent = player2;
-
-            // Control button labels
-            const player1Control = document.getElementById('player1Control');
-            const player2Control = document.getElementById('player2Control');
-            if (player1Control) player1Control.textContent = player1;
-            if (player2Control) player2Control.textContent = player2;
-
-            // Stats table headers
-            const statsPlayer1Header = document.getElementById('statsPlayer1Header');
-            const statsPlayer2Header = document.getElementById('statsPlayer2Header');
-            if (statsPlayer1Header) statsPlayer1Header.textContent = player1;
-            if (statsPlayer2Header) statsPlayer2Header.textContent = player2;
-
-            closeSettingsModal();
-            alert('Match imported successfully!');
-        }
-
-        // Set up drag-and-drop on settings modal
-        window.addEventListener('DOMContentLoaded', function () {
-            const modalContent = document.querySelector('#settingsModal .modal-content');
-            if (modalContent) {
-                modalContent.addEventListener('dragover', handleDragOver);
-                modalContent.addEventListener('dragleave', handleDragLeave);
-                modalContent.addEventListener('drop', handleDrop);
-            }
-        });
-
-        // Close modal when clicking outside of it
-        window.onclick = function (event) {
-            const modal = document.getElementById('settingsModal');
-            if (event.target === modal) {
                 closeSettingsModal();
             }
-        }
 
-        // Statistics panel toggle functionality
-        function toggleStats() {
-            const statsPanel = document.getElementById('statsPanel');
-            const statsChevron = document.getElementById('statsChevron');
+            // Import match score functions
+            function triggerImportFile() {
+                document.getElementById("importFileInput").click();
+            }
 
-            if (statsPanel && statsChevron) {
-                const isExpanded = statsPanel.classList.contains('expanded');
+            function handleImportFileSelect(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    processImportFile(file);
+                }
+                // Reset the input so the same file can be selected again
+                event.target.value = "";
+            }
 
-                if (isExpanded) {
-                    statsPanel.classList.remove('expanded');
-                    statsChevron.classList.remove('expanded');
-                    localStorage.setItem('statsExpanded', 'false');
-                } else {
-                    statsPanel.classList.add('expanded');
-                    statsChevron.classList.add('expanded');
-                    localStorage.setItem('statsExpanded', 'true');
+            function handleDragOver(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.currentTarget.classList.add("drag-over");
+            }
+
+            function handleDragLeave(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.currentTarget.classList.remove("drag-over");
+            }
+
+            function handleDrop(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.currentTarget.classList.remove("drag-over");
+
+                const files = event.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (
+                        file.type === "application/json" ||
+                        file.name.endsWith(".json")
+                    ) {
+                        processImportFile(file);
+                    } else {
+                        alert("Please drop a JSON file.");
+                    }
                 }
             }
-        }
 
-        // Restore stats panel state on page load
-        window.addEventListener('DOMContentLoaded', function () {
-            const statsExpanded = localStorage.getItem('statsExpanded');
-            const statsPanel = document.getElementById('statsPanel');
-            const statsChevron = document.getElementById('statsChevron');
-
-            // Default to collapsed, but expand if user previously had it expanded
-            if (statsExpanded === 'true' && statsPanel && statsChevron) {
-                statsPanel.classList.add('expanded');
-                statsChevron.classList.add('expanded');
-            }
-        });
-
-        // Stat Input Modal State
-        let currentStatPlayer = null;
-        let selectedServe = null;
-        let selectedType = null;
-
-        function openStatInputModal(player) {
-            currentStatPlayer = player;
-            selectedServe = null;
-            selectedType = null;
-
-            // Clear all selections
-            document.querySelectorAll('.stat-btn').forEach(btn => btn.classList.remove('selected'));
-
-            // Pre-fill rally length from space bar counter, or clear
-            const rallyInput = document.getElementById('rallyLengthInput');
-            if (rallyInput) {
-                rallyInput.value = window.rallyCounter > 0 ? window.rallyCounter : '';
+            function processImportFile(file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (validateMatchScoreExport(data)) {
+                            performMatchImport(data);
+                        }
+                    } catch (error) {
+                        alert("Error reading file: " + error.message);
+                    }
+                };
+                reader.onerror = function () {
+                    alert("Error reading file.");
+                };
+                reader.readAsText(file);
             }
 
-            // Update modal title
-            const playerNameEl = document.getElementById(`player${player}NameSpan`);
-            const playerName = playerNameEl?.textContent || `Player ${player}`;
-            document.getElementById('statModalPointInfo').textContent = `Point to ${playerName}`;
+            function validateMatchScoreExport(data) {
+                // Check matchDetails
+                if (
+                    !data.matchDetails ||
+                    typeof data.matchDetails.gamesPerSet !== "number" ||
+                    typeof data.matchDetails.setsToWin !== "number" ||
+                    typeof data.matchDetails.tieBreakPoints !== "number"
+                ) {
+                    alert("Invalid file: missing or invalid matchDetails.");
+                    return false;
+                }
 
-            // Hide serve-only point types (Ace, Missed Return) if player is the returner
-            const isServer = typeof scorer !== 'undefined' && scorer.getServer() === player;
-            const aceBtn = document.querySelector('[data-value="ace"]');
-            const missedReturnBtn = document.querySelector('[data-value="missed_return"]');
-            if (aceBtn) {
-                aceBtn.style.display = isServer ? '' : 'none';
+                // Check players
+                if (
+                    !data.players ||
+                    typeof data.players.player1 !== "string" ||
+                    typeof data.players.player2 !== "string"
+                ) {
+                    alert("Invalid file: missing or invalid players.");
+                    return false;
+                }
+
+                // Check pointsHistory
+                if (!Array.isArray(data.pointsHistory)) {
+                    alert("Invalid file: missing or invalid pointsHistory.");
+                    return false;
+                }
+
+                // Validate each point has required fields
+                for (let i = 0; i < data.pointsHistory.length; i++) {
+                    const point = data.pointsHistory[i];
+                    if (
+                        !point ||
+                        (point.winner !== 1 && point.winner !== 2) ||
+                        (point.server !== 1 && point.server !== 2) ||
+                        typeof point.serveResult !== "string" ||
+                        typeof point.pointType !== "string"
+                    ) {
+                        alert(
+                            `Invalid file: point ${i + 1} is missing required fields (winner, server, serveResult, pointType).`,
+                        );
+                        return false;
+                    }
+                }
+
+                return true;
             }
-            if (missedReturnBtn) {
-                missedReturnBtn.style.display = isServer ? '' : 'none';
+
+            function performMatchImport(data) {
+                if (typeof scorer === "undefined") {
+                    alert("Scorer not initialized.");
+                    return;
+                }
+
+                // Import the match
+                scorer.importMatch(data);
+
+                // Update player names in the DOM
+                const player1 = data.players.player1;
+                const player2 = data.players.player2;
+
+                // Scoreboard names
+                const player1NameSpan =
+                    document.getElementById("player1NameSpan");
+                const player2NameSpan =
+                    document.getElementById("player2NameSpan");
+                if (player1NameSpan) player1NameSpan.textContent = player1;
+                if (player2NameSpan) player2NameSpan.textContent = player2;
+
+                // Control button labels
+                const player1Control =
+                    document.getElementById("player1Control");
+                const player2Control =
+                    document.getElementById("player2Control");
+                if (player1Control) player1Control.textContent = player1;
+                if (player2Control) player2Control.textContent = player2;
+
+                // Stats table headers
+                const statsPlayer1Header =
+                    document.getElementById("statsPlayer1Header");
+                const statsPlayer2Header =
+                    document.getElementById("statsPlayer2Header");
+                if (statsPlayer1Header)
+                    statsPlayer1Header.textContent = player1;
+                if (statsPlayer2Header)
+                    statsPlayer2Header.textContent = player2;
+
+                closeSettingsModal();
+                alert("Match imported successfully!");
             }
 
-            // Show modal
-            document.getElementById('statInputModal').style.display = 'block';
-
-            // Focus on rally length input
-            if (rallyInput) {
-                rallyInput.focus();
-            }
-        }
-
-        function closeStatInputModal() {
-            document.getElementById('statInputModal').style.display = 'none';
-            currentStatPlayer = null;
-            selectedServe = null;
-            selectedType = null;
-            if (window.resetRallyCounter) window.resetRallyCounter();
-        }
-
-        function selectStatButton(button) {
-            const statType = button.dataset.stat;
-            const value = button.dataset.value;
-
-            // Remove selection from buttons of same type
-            document.querySelectorAll(`.stat-btn[data-stat="${statType}"]`).forEach(btn => {
-                btn.classList.remove('selected');
+            // Set up drag-and-drop on settings modal
+            window.addEventListener("DOMContentLoaded", function () {
+                const modalContent = document.querySelector(
+                    "#settingsModal .modal-content",
+                );
+                if (modalContent) {
+                    modalContent.addEventListener("dragover", handleDragOver);
+                    modalContent.addEventListener("dragleave", handleDragLeave);
+                    modalContent.addEventListener("drop", handleDrop);
+                }
             });
 
-            // Select this button
-            button.classList.add('selected');
-
-            // Store selection
-            if (statType === 'serve') {
-                selectedServe = value;
-            } else if (statType === 'type') {
-                selectedType = value;
-
-                // Auto-populate rally length for aces and missed returns
-                const rallyInput = document.getElementById('rallyLengthInput');
-                if (rallyInput && (value === 'ace' || value === 'missed_return')) {
-                    rallyInput.value = '1';
+            // Close modal when clicking outside of it
+            window.onclick = function (event) {
+                const modal = document.getElementById("settingsModal");
+                if (event.target === modal) {
+                    closeSettingsModal();
                 }
-
-                // Auto-submit for double fault (no serve result needed)
-                if (value === 'double_fault') {
-                    confirmStatInput();
-                }
-            }
-        }
-
-        function confirmStatInput() {
-            if (!currentStatPlayer) return;
-
-            // For double fault, serve result is not needed
-            const isDoubleFault = selectedType === 'double_fault';
-
-            // Validate serve result is selected (unless double fault)
-            if (!isDoubleFault && !selectedServe) {
-                // Add error feedback to serve buttons
-                const serveGroup = document.querySelector('.form-group:has([data-stat="serve"])');
-                if (serveGroup) {
-                    serveGroup.style.animation = 'shake 0.5s ease-in-out';
-                    serveGroup.style.border = '2px solid #ef4444';
-                    serveGroup.style.borderRadius = '8px';
-                    serveGroup.style.padding = '8px';
-                    setTimeout(() => {
-                        serveGroup.style.animation = '';
-                        serveGroup.style.border = '';
-                        serveGroup.style.padding = '';
-                    }, 2000);
-                }
-                return;
-            }
-
-            // Validate point type is selected
-            if (!selectedType) {
-                // Add error feedback to point type buttons
-                const typeGroup = document.querySelector('.form-group:has([data-stat="type"])');
-                if (typeGroup) {
-                    typeGroup.style.animation = 'shake 0.5s ease-in-out';
-                    typeGroup.style.border = '2px solid #ef4444';
-                    typeGroup.style.borderRadius = '8px';
-                    typeGroup.style.padding = '8px';
-                    setTimeout(() => {
-                        typeGroup.style.animation = '';
-                        typeGroup.style.border = '';
-                        typeGroup.style.padding = '';
-                    }, 2000);
-                }
-                return;
-            }
-
-            // Build metadata object
-            const metadata = {
-                serveResult: selectedServe,
-                pointType: selectedType
             };
 
-            // For double fault, default serve result to 'second' (the fault was on second serve)
-            if (isDoubleFault) {
-                metadata.serveResult = 'second';
+            // Statistics panel toggle functionality
+            function toggleStats() {
+                const statsPanel = document.getElementById("statsPanel");
+                const statsChevron = document.getElementById("statsChevron");
+
+                if (statsPanel && statsChevron) {
+                    const isExpanded =
+                        statsPanel.classList.contains("expanded");
+
+                    if (isExpanded) {
+                        statsPanel.classList.remove("expanded");
+                        statsChevron.classList.remove("expanded");
+                        localStorage.setItem("statsExpanded", "false");
+                    } else {
+                        statsPanel.classList.add("expanded");
+                        statsChevron.classList.add("expanded");
+                        localStorage.setItem("statsExpanded", "true");
+                    }
+                }
             }
 
-            // Add rally length if provided
-            const rallyInput = document.getElementById('rallyLengthInput');
-            const rallyLengthValue = rallyInput ? parseInt(rallyInput.value) : null;
-            if (rallyLengthValue && !isNaN(rallyLengthValue) && rallyLengthValue >= 1) {
-                metadata.rallyLength = rallyLengthValue;
+            // Restore stats panel state on page load
+            window.addEventListener("DOMContentLoaded", function () {
+                const statsExpanded = localStorage.getItem("statsExpanded");
+                const statsPanel = document.getElementById("statsPanel");
+                const statsChevron = document.getElementById("statsChevron");
+
+                // Default to collapsed, but expand if user previously had it expanded
+                if (statsExpanded === "true" && statsPanel && statsChevron) {
+                    statsPanel.classList.add("expanded");
+                    statsChevron.classList.add("expanded");
+                }
+            });
+
+            // Stat Input Modal State
+            let currentStatPlayer = null;
+            let selectedServe = null;
+            let selectedType = null;
+
+            function openStatInputModal(player) {
+                currentStatPlayer = player;
+                selectedServe = null;
+                selectedType = null;
+
+                // Clear all selections
+                document
+                    .querySelectorAll(".stat-btn")
+                    .forEach((btn) => btn.classList.remove("selected"));
+
+                // Pre-fill rally length from space bar counter, or clear
+                const rallyInput = document.getElementById("rallyLengthInput");
+                if (rallyInput) {
+                    rallyInput.value =
+                        window.rallyCounter > 0 ? window.rallyCounter : "";
+                }
+
+                // Update modal title
+                const playerNameEl = document.getElementById(
+                    `player${player}NameSpan`,
+                );
+                const playerName =
+                    playerNameEl?.textContent || `Player ${player}`;
+                document.getElementById("statModalPointInfo").textContent =
+                    `Point to ${playerName}`;
+
+                // Hide serve-only point types (Ace, Missed Return) if player is the returner
+                const isServer =
+                    typeof scorer !== "undefined" &&
+                    scorer.getServer() === player;
+                const aceBtn = document.querySelector('[data-value="ace"]');
+                const missedReturnBtn = document.querySelector(
+                    '[data-value="missed_return"]',
+                );
+                if (aceBtn) {
+                    aceBtn.style.display = isServer ? "" : "none";
+                }
+                if (missedReturnBtn) {
+                    missedReturnBtn.style.display = isServer ? "" : "none";
+                }
+
+                // Show modal
+                document.getElementById("statInputModal").style.display =
+                    "block";
+
+                // Focus on rally length input
+                if (rallyInput) {
+                    rallyInput.focus();
+                }
             }
 
-            // Score the point with stats
-            if (typeof scorer !== 'undefined') {
-                scorer.scorePointWithStats(currentStatPlayer, metadata);
+            function closeStatInputModal() {
+                document.getElementById("statInputModal").style.display =
+                    "none";
+                currentStatPlayer = null;
+                selectedServe = null;
+                selectedType = null;
+                if (window.resetRallyCounter) window.resetRallyCounter();
             }
 
-            closeStatInputModal();
-        }
+            function selectStatButton(button) {
+                const statType = button.dataset.stat;
+                const value = button.dataset.value;
 
-    </script>
-</body>
+                // Remove selection from buttons of same type
+                document
+                    .querySelectorAll(`.stat-btn[data-stat="${statType}"]`)
+                    .forEach((btn) => {
+                        btn.classList.remove("selected");
+                    });
 
+                // Select this button
+                button.classList.add("selected");
+
+                // Store selection
+                if (statType === "serve") {
+                    selectedServe = value;
+                } else if (statType === "type") {
+                    selectedType = value;
+
+                    // Auto-populate rally length for aces and missed returns
+                    const rallyInput =
+                        document.getElementById("rallyLengthInput");
+                    if (
+                        rallyInput &&
+                        (value === "ace" || value === "missed_return")
+                    ) {
+                        rallyInput.value = "1";
+                    }
+
+                    // Auto-submit for double fault (no serve result needed)
+                    if (value === "double_fault") {
+                        confirmStatInput();
+                    }
+                }
+            }
+
+            function confirmStatInput() {
+                if (!currentStatPlayer) return;
+
+                // For double fault, serve result is not needed
+                const isDoubleFault = selectedType === "double_fault";
+
+                // Validate serve result is selected (unless double fault)
+                if (!isDoubleFault && !selectedServe) {
+                    // Add error feedback to serve buttons
+                    const serveGroup = document.querySelector(
+                        '.form-group:has([data-stat="serve"])',
+                    );
+                    if (serveGroup) {
+                        serveGroup.style.animation = "shake 0.5s ease-in-out";
+                        serveGroup.style.border = "2px solid #ef4444";
+                        serveGroup.style.borderRadius = "8px";
+                        serveGroup.style.padding = "8px";
+                        setTimeout(() => {
+                            serveGroup.style.animation = "";
+                            serveGroup.style.border = "";
+                            serveGroup.style.padding = "";
+                        }, 2000);
+                    }
+                    return;
+                }
+
+                // Validate point type is selected
+                if (!selectedType) {
+                    // Add error feedback to point type buttons
+                    const typeGroup = document.querySelector(
+                        '.form-group:has([data-stat="type"])',
+                    );
+                    if (typeGroup) {
+                        typeGroup.style.animation = "shake 0.5s ease-in-out";
+                        typeGroup.style.border = "2px solid #ef4444";
+                        typeGroup.style.borderRadius = "8px";
+                        typeGroup.style.padding = "8px";
+                        setTimeout(() => {
+                            typeGroup.style.animation = "";
+                            typeGroup.style.border = "";
+                            typeGroup.style.padding = "";
+                        }, 2000);
+                    }
+                    return;
+                }
+
+                // Build metadata object
+                const metadata = {
+                    serveResult: selectedServe,
+                    pointType: selectedType,
+                };
+
+                // For double fault, default serve result to 'second' (the fault was on second serve)
+                if (isDoubleFault) {
+                    metadata.serveResult = "second";
+                }
+
+                // Add rally length if provided
+                const rallyInput = document.getElementById("rallyLengthInput");
+                const rallyLengthValue = rallyInput
+                    ? parseInt(rallyInput.value)
+                    : null;
+                if (
+                    rallyLengthValue &&
+                    !isNaN(rallyLengthValue) &&
+                    rallyLengthValue >= 1
+                ) {
+                    metadata.rallyLength = rallyLengthValue;
+                }
+
+                // Score the point with stats
+                if (typeof scorer !== "undefined") {
+                    scorer.scorePointWithStats(currentStatPlayer, metadata);
+                }
+
+                closeStatInputModal();
+            }
+        </script>
+    </body>
 </html>
