@@ -1020,11 +1020,18 @@
                         type="checkbox"
                         id="includeDoubleFaults"
                         name="includeDoubleFaults"
-                        value="Export Double Faults"
+			value="true"
                     />
-                    <label class="slider-label">
-                        Export Double Fault Scorecards
-                    </label>
+                    Export Double Fault Scorecards
+                </div>
+                <div class="form-group">
+                    <input
+                        type="checkbox"
+                        id="noAd"
+			name="noAd"
+			value="true"
+                    />
+		    Deciding Point (No Advantage)
                 </div>
 
                 <div class="form-group">
@@ -1252,12 +1259,16 @@
                     document.getElementById("setsToWin").value,
                 );
                 const theme = document.getElementById("theme").value;
+		const includeDoubleFaults = document.getElementById("includeDoubleFaults").checked;
+    		const noAd = document.getElementById("noAd").checked;
 
                 if (typeof scorer !== "undefined") {
                     scorer.updateConfig({
                         gamesPerSet: gamesPerSet,
                         setsToWin: setsToWin,
                         theme: theme,
+			includeDoubleFaults,
+			noAd: noAd,
                     });
                 }
 

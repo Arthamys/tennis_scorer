@@ -16,7 +16,7 @@
  */
 
 import {
-  MatchConfig,
+  atchConfig,
   MatchState,
   Player,
   PointMetadata,
@@ -34,7 +34,8 @@ export class TennisMatch {
       setsToWin: 2,
       theme: "default",
       tieBreakPoints: 7,
-      includeDoubleFaults: true,
+      includeDoubleFaults: false,
+      noAd: false,
       ...config,
     };
 
@@ -526,10 +527,11 @@ export class TennisMatch {
     const currentPlayer =
       player === 1 ? this.state.player1 : this.state.player2;
     const opponent = player === 1 ? this.state.player2 : this.state.player1;
+    const hasPointLead = !this.config.noAd && currentPlayer.points >= opponent.points + 2;
 
     if (
       currentPlayer.points >= 4 &&
-      currentPlayer.points >= opponent.points + 2
+      hasPointLead
     ) {
       return true;
     }

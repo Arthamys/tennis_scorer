@@ -17,6 +17,7 @@ export interface MatchConfig {
   theme: string;
   tieBreakPoints: number; // 7 for regular tie-break, 10 for super tie-break
   includeDoubleFaults: boolean;
+  noAd: boolean;
 }
 
 /// Metadata about how a point was won

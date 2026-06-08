@@ -129,13 +129,22 @@ export class ScoreKeeper {
     ) as HTMLSelectElement;
     const includeDoubleFaults = document.getElementById(
       "includeDoubleFaults",
-    ) as HTMLSelectElement;
+    ) as HTMLInputElement;
+    const noAd = document.getElementById(
+      "noAd",
+    ) as HTMLInputElement;
 
     if (gamesSelect && setsSelect) {
       this.updateConfig({
         gamesPerSet: parseInt(gamesSelect.value),
         setsToWin: parseInt(setsSelect.value),
       });
+    }
+    if (includeDoubleFaults) {
+	    this.updateConfig({includeDoubleFaults: includeDoubleFaults.checked});
+    }
+    if (noAd) {
+	    this.updateConfig({noAd: noAd.checked});
     }
   }
 
